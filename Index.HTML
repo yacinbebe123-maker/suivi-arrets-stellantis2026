@@ -1,0 +1,4318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Stellantis – Suivi des Arrêts Chaîne & Absences</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root {
+        --primary: #1A7DFF;
+        --danger: #d90429;
+        --success: #2a9d8f;
+        --warning: #ff9f1c;
+        --info: #0ea5e9;
+        --dark: #0d1b2a;
+        --darker: #1b263b;
+        --light: #e0e1dd;
+    }
+    
+    body { 
+        font-family: 'Segoe UI', Arial, sans-serif; 
+        background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
+        color: var(--light); 
+        margin: 0; 
+        padding: 15px; 
+        min-height: 100vh;
+    }
+    
+    .container { 
+        max-width: 600px; 
+        margin: auto;
+        background: rgba(27, 38, 59, 0.8);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); 
+        backdrop-filter: blur(10px);
+    }
+    
+    h1 { 
+        text-align: center; 
+        color: var(--primary); 
+        font-size: 28px; 
+        margin-bottom: 20px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .header-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    
+    .timer-display {
+        background: rgba(0,0,0,0.3);
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin: 15px 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--warning);
+        border: 2px solid rgba(255, 159, 28, 0.3);
+    }
+    
+    select, input { 
+        width: 100%; 
+        padding: 14px; 
+        background: rgba(255,255,255,0.1); 
+        border: 1px solid rgba(255,255,255,0.2);
+        color: var(--light); 
+        margin-top: 8px; 
+        border-radius: 8px; 
+        font-size: 16px;
+        transition: border 0.3s;
+    }
+    
+    input[type="time"], input[type="number"] {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    select:focus, input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+    
+    .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    button { 
+        padding: 16px; 
+        border: none; 
+        font-size: 16px; 
+        font-weight: bold; 
+        border-radius: 8px; 
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    button:active {
+        transform: translateY(0);
+    }
+    
+    #stopBtn { 
+        background: linear-gradient(135deg, var(--danger) 0%, #9d0208 100%);
+        color: white;
+    }
+    
+    #goBtn { 
+        background: linear-gradient(135deg, var(--success) 0%, #1a936f 100%);
+        color: white;
+    }
+    
+    .button-group-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    #csvBtn, #csvAbsencesBtn { 
+        background: linear-gradient(135deg, var(--primary) 0%, #00509e 100%);
+        color: white;
+    }
+
+    #csvAbsencesBtn {
+        background: linear-gradient(135deg, var(--info) 0%, #0077c2 100%);
+    }
+
+    #whBtn, #whStartBtn { 
+        background: linear-gradient(135deg, #25D366 0%, #1ebc5b 100%);
+        color: white;
+    }
+    
+    .button-group-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    #whShiftBtn {
+        background: linear-gradient(135deg, #5856d6 0%, #5e5ce6 100%);
+        color: white;
+    }
+    
+    #clearBtn {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+    }
+    
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .stat-box {
+        background: rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--primary);
+        display: block;
+    }
+    
+    .stat-box[style*="--success"] .stat-value {
+        color: var(--success) !important;
+    }
+    .stat-box[style*="--info"] .stat-value {
+        color: var(--info) !important;
+    }
+
+    #absenceBreakdownTable th {
+        background: rgba(14, 165, 233, 0.2);
+        font-weight: 500;
+        font-size: 12px;
+        padding: 8px;
+    }
+    #absenceBreakdownTable td {
+        padding: 8px;
+        font-size: 13px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    table { 
+        width:100%; 
+        margin-top:20px; 
+        background: rgba(0,0,0,0.2);
+        border-collapse:collapse; 
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    th,td { 
+        padding:12px; 
+        text-align: left;
+        border-bottom:1px solid rgba(255,255,255,0.1); 
+        font-size:14px; 
+    }
+    
+    th {
+        background: rgba(26, 125, 255, 0.2);
+        font-weight: 600;
+    }
+    
+    tr:hover {
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .tabs {
+        display: flex;
+        margin: 20px 0 10px 0;
+        background: rgba(0,0,0,0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        flex-wrap: wrap;
+    }
+    
+    .tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        min-width: 100px;
+    }
+    
+    .tab.active {
+        background: var(--primary);
+        font-weight: bold;
+    }
+    
+    .chart-container {
+        background: rgba(0,0,0,0.2); 
+        padding:20px; 
+        margin-top:10px; 
+        border-radius:12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: none;
+    }
+    
+    .chart-container.active {
+        display: block;
+    }
+    
+    canvas { 
+        width:100%!important; 
+        height:280px!important; 
+    }
+    
+    .cause-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .cause-btn {
+        padding: 6px 12px;
+        background: rgba(26, 125, 255, 0.2);
+        border: 1px solid var(--primary);
+        border-radius: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .cause-btn:hover {
+        background: var(--primary);
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .modal-content {
+        background: var(--darker);
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 400px;
+        width: 90%;
+    }
+    
+    .filter-group {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+        flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+        flex: 1;
+        padding: 8px;
+        background: rgba(26, 125, 255, 0.2);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        min-width: 80px;
+    }
+    
+    .filter-btn.active {
+        background: var(--primary);
+    }
+    
+    .input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .save-indicator {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: var(--success);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 1000;
+    }
+    
+    .save-indicator.visible {
+        opacity: 1;
+    }
+    
+    .alarm-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--warning);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(255, 159, 28, 0.4);
+        z-index: 10000;
+        animation: pulse 1.5s infinite;
+        max-width: 300px;
+        display: none;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 159, 28, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 159, 28, 0); }
+    }
+    
+    .alarm-controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .alarm-controls button {
+        padding: 8px 12px;
+        font-size: 12px;
+        flex: 1;
+    }
+    
+    @media (max-width: 480px) {
+        .container { padding: 15px; }
+        .button-group, .button-group-2, .button-group-3 { grid-template-columns: 1fr; }
+        .stats-container { grid-template-columns: 1fr; }
+        button { padding: 14px; }
+        .filter-group { flex-wrap: wrap; }
+        .input-group { grid-template-columns: 1fr; }
+        .tabs { flex-wrap: wrap; }
+        .tab { min-width: 30%; }
+        .alarm-indicator {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+    }
+    
+    .shift-indicator {
+        text-align: center;
+        margin: 10px 0 20px 0;
+        padding: 10px;
+        background: rgba(26, 125, 255, 0.2);
+        border-radius: 8px;
+        font-size: 14px;
+        border: 1px solid rgba(26, 125, 255, 0.3);
+    }
+    
+    .shift-date-selector {
+        margin: 10px 0;
+        padding: 10px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 8px;
+    }
+    
+    #shiftSelector {
+        margin: 10px 0;
+        padding: 10px;
+        background: rgba(26, 125, 255, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(26, 125, 255, 0.3);
+    }
+    
+    /* ANIMATIONS POUR LE RENDEMENT AUTO */
+    @keyframes slideInUp {
+        from {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutDown {
+        from {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+        to {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(26, 125, 255, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(26, 125, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(26, 125, 255, 0); }
+    }
+    
+    /* STYLES AJOUTÉS POUR TEAM LEADER */
+    .team-leader-group {
+        margin-bottom: 15px;
+        background: rgba(0,0,0,0.1);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .team-leader-input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255,255,255,0.15);
+        border: 2px solid var(--primary);
+        border-radius: 8px;
+        color: #FFD700; /* Couleur or pour le texte */
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+    
+    .team-leader-input:focus {
+        outline: none;
+        border-color: #FFD700;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+    
+    #saveTeamLeaderBtn {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #000;
+        font-weight: bold;
+        width: 100%;
+    }
+    
+    #saveTeamLeaderBtn:hover {
+        background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    /* STYLES POUR L'ÉDITION EN LIGNE */
+    .editable-cell {
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+    }
+    
+    .editable-cell:hover {
+        background-color: rgba(26, 125, 255, 0.2) !important;
+    }
+    
+    .editable-cell.editing {
+        background-color: rgba(255, 215, 0, 0.2) !important;
+        padding: 2px !important;
+    }
+    
+    .editable-input {
+        width: 100%;
+        height: 100%;
+        padding: 8px;
+        background: rgba(0,0,0,0.7);
+        border: 2px solid #FFD700;
+        border-radius: 4px;
+        color: #FFD700;
+        font-size: 14px;
+        font-weight: bold;
+        outline: none;
+    }
+    
+    .edit-tooltip {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.9);
+        color: #FFD700;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 100;
+        border: 1px solid #FFD700;
+        display: none;
+    }
+    
+    .editable-cell:hover .edit-tooltip {
+        display: block;
+    }
+    
+    /* STYLES POUR LES CELLULES D'ÉQUIPE */
+    .team-cell {
+        padding: 6px 10px;
+        border-radius: 15px;
+        font-weight: bold;
+        text-align: center;
+        display: inline-block;
+        min-width: 60px;
+    }
+    
+    .team-A { background: rgba(26, 125, 255, 0.3); color: #1A7DFF; }
+    .team-B { background: rgba(42, 157, 143, 0.3); color: #2a9d8f; }
+    .team-C { background: rgba(255, 159, 28, 0.3); color: #ff9f1c; }
+    .team-D { background: rgba(148, 0, 211, 0.3); color: #9400d3; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🏭 STELLANTIS - SUIVI DES ARRÊTS CHAÎNE</h1>
+
+<div class="header-info">
+    <div id="currentDate"></div>
+    <div id="currentTime"></div>
+</div>
+
+<!-- Sélecteur de shift 3x8 -->
+<div id="shiftSelector">
+    <div style="font-size: 14px; margin-bottom: 8px; color: #ccc; text-align: center;">
+        🕐 SÉLECTION DU SHIFT 3x8
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+        <button onclick="selectShift('Nuit')" id="shiftNuitBtn" style="padding: 8px 12px; background: var(--primary); color: white; border-radius: 5px; border: 1px solid var(--primary); font-weight: bold;">
+            🌙 Nuit (22h-6h)
+        </button>
+        <button onclick="selectShift('Matin')" id="shiftMatinBtn" style="padding: 8px 12px; background: var(--dark); color: white; border-radius: 5px; border: 1px solid var(--primary);">
+            ☀️ Matin (6h-14h)
+        </button>
+        <button onclick="selectShift('Après-midi')" id="shiftApresMidiBtn" style="padding: 8px 12px; background: var(--dark); color: white; border-radius: 5px; border: 1px solid var(--primary);">
+            🌅 Après-midi (14h-22h)
+        </button>
+    </div>
+</div>
+
+<!-- Indicateur de shift actuel -->
+<div id="shiftIndicator" class="shift-indicator">
+    📅 <strong>Shift actuel:</strong> <span id="currentShiftDate">...</span> 
+    (<span id="currentShiftHours">22h-6h</span>)
+</div>
+
+<!-- Sélecteur de shift manuel -->
+<div class="shift-date-selector">
+    <div style="font-size: 13px; margin-bottom: 5px; color: #ccc;">
+        🔍 Sélectionner un shift spécifique :
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <input type="date" id="shiftDatePicker" style="flex: 1;">
+        <button onclick="selectSpecificShift()" style="padding: 8px 12px; background: var(--primary);">
+            📅 Aller
+        </button>
+        <button onclick="resetToCurrentShift()" style="padding: 8px 12px; background: var(--warning);">
+            🔄 Actuel
+        </button>
+    </div>
+</div>
+
+<!-- Indicateur d'alarme -->
+<div class="alarm-indicator" id="pauseAlarmIndicator">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+        <span style="font-size: 24px;">⏰</span>
+        <div>
+            <strong id="alarmTitle">ALARME PAUSE</strong>
+            <div id="alarmMessage" style="font-size: 14px; margin-top: 5px;"></div>
+        </div>
+    </div>
+    <div class="alarm-controls">
+        <button id="snoozeAlarmBtn" style="background: var(--warning);">Snooze 5 min</button>
+        <button id="stopAlarmBtn" style="background: var(--danger);">Arrêter l'alarme</button>
+    </div>
+</div>
+
+<select id="equipe">
+    <option value="A">Équipe A</option>
+    <option value="B">Équipe B</option>
+    <option value="C">Équipe C</option>
+    <option value="D">Équipe D</option>
+</select>
+
+<button id="whStartBtn" style="margin-top: 10px; width: 100%;">📋 Rapport Début de Shift</button>
+
+<div id="timerDisplay" class="timer-display">00:00:00</div>
+
+<!-- CHANGÉ: CHAMP TEAM LEADER AVEC NOUVEAU STYLE ET BOUTON -->
+<div class="team-leader-group">
+    <label for="teamLeader" style="color: #FFD700; font-weight: bold; display: block; margin-bottom: 8px;">
+        👨‍💼 TEAM LEADER:
+    </label>
+    <input id="teamLeader" type="text" placeholder="Nom du Team Leader" class="team-leader-input">
+    <button id="saveTeamLeaderBtn" onclick="saveTeamLeader()">
+        💾 SAUVEGARDER TEAM LEADER
+    </button>
+</div>
+
+<input id="cause" type="text" placeholder="🔍 Saisir la cause librement..." list="cause-list" />
+<datalist id="cause-list">
+    <option value="PAUSE CAFÉ / MIDI">
+    <option value="Manque composant">
+    <option value="Problème machine">
+    <option value="Maintenance préventive">
+    <option value="Réglage machine">
+    <option value="Attente chariot">
+    <option value="Problème qualité">
+    <option value="Absence opérateur">
+    <option value="Formation">
+    <option value="Incident sécurité">
+    <option value="Changement outillage">
+    <option value="Nettoyage poste">
+    <option value="Attente composant">
+    <option value="Panne électrique">
+    <option value="Panne pneumatique">
+    <option value="Réunion d'équipe">
+</datalist>
+
+<div class="cause-suggestions">
+    <span class="cause-btn" onclick="setCause('PAUSE CAFÉ / MIDI')">Pause</span>
+    <span class="cause-btn" onclick="setCause('Manque composant')">Manque composant</span>
+    <span class="cause-btn" onclick="setCause('Problème machine')">Problème machine</span>
+    <span class="cause-btn" onclick="setCause('Maintenance préventive')">Maintenance</span>
+</div>
+
+<div class="button-group">
+    <button id="stopBtn">⛔ DÉBUT ARRÊT</button>
+    <button id="goBtn">▶️ REPRISE CHAÎNE</button>
+</div>
+
+<div class="button-group" style="margin-top: 10px;">
+    <button id="missedStopBtn">⏱️ AJOUTER ARRÊT RATÉ</button>
+</div>
+
+<div class="stats-container">
+    <div class="stat-box">
+        <span>Arrêts Aujourd'hui</span>
+        <span class="stat-value" id="count">0</span>
+    </div>
+    <div class="stat-box">
+        <span>Arrêts Ratés (Aujourd'hui)</span>
+        <span class="stat-value" id="missedStopsCount" style="color:var(--warning);">0</span>
+    </div>
+    <div class="stat-box">
+        <span>Temps Total (Brut)</span>
+        <span class="stat-value" id="totalTime">0s</span>
+    </div>
+    
+    <div class="stat-box" style="grid-column: 1 / 3; border-left-color: var(--warning); padding: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-weight: bold;">Pauses Forfaitaires Définies</span>
+            <button id="testAlarmBtn" style="background: var(--warning); padding: 5px 10px; font-size: 12px; border-radius: 5px;">
+                🔔 Tester Alarme
+            </button>
+        </div>
+        <p style="font-size:12px; margin-top:0; color:#ccc;">Ces pauses seront automatiquement enregistrées pour la déduction NETTE.</p>
+
+        <label for="p1Start" style="display: block; margin-top: 5px; font-size: 13px;">Pause 1</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="time" id="p1Start" value="08:00" onchange="updatePauseTimes();" style="flex: 1;">
+            <input type="time" id="p1End" value="08:05" onchange="updatePauseTimes();" style="flex: 1;">
+        </div>
+        
+        <label for="p2Start" style="display: block; margin-top: 5px; font-size: 13px;">Pause 2</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="time" id="p2Start" value="10:00" onchange="updatePauseTimes();" style="flex: 1;">
+            <input type="time" id="p2End" value="10:05" onchange="updatePauseTimes();" style="flex: 1;">
+        </div>
+        
+        <label for="p3Start" style="display: block; margin-top: 5px; font-size: 13px;">Pause 3</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="time" id="p3Start" value="12:00" onchange="updatePauseTimes();" style="flex: 1;">
+            <input type="time" id="p3End" value="12:20" onchange="updatePauseTimes();" style="flex: 1;">
+        </div>
+        
+        <div style="margin-top: 10px; padding: 8px; background: rgba(255, 159, 28, 0.1); border-radius: 5px;">
+            <label style="display: block; margin-bottom: 5px; font-size: 12px;">
+                <input type="checkbox" id="enableAlarms" checked onchange="toggleAlarms()">
+                Activer les alarmes de pause
+            </label>
+            <label style="display: block; margin-top: 5px; font-size: 12px;">
+                <input type="number" id="alarmMinutes" min="1" max="30" value="2" style="width: 50px; padding: 3px; margin-right: 5px;">
+                minutes avant chaque pause
+            </label>
+        </div>
+    </div>
+    <div class="stat-box" style="border-left-color: var(--success);">
+        <span>Total Minutes Arrêt (Net)</span>
+        <span class="stat-value" id="netTotalMinutes" style="color:var(--success);">0 min</span>
+    </div>
+    <div class="stat-box" style="border-left-color: var(--success);">
+        <span>Total Secondes Arrêt (Net)</span>
+        <span class="stat-value" id="netTotalSeconds" style="color:var(--success);">0s</span>
+    </div>
+</div>
+
+<!-- SECTION OBJECTIFS AJOUTÉE -->
+<div style="margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+    <h2 style="color:var(--warning); text-align:center; margin-bottom:15px; font-size: 18px;">🎯 OBJECTIFS DU SHIFT</h2>
+    
+    <div class="input-group">
+        <input id="objectifProd" type="number" placeholder="Objectif Production (unités)" min="0" step="1" />
+        <input id="objectifTRS" type="number" placeholder="Objectif TRS (%)" min="0" max="100" step="0.1" />
+    </div>
+    
+    <div class="input-group">
+        <input id="objectifQualite" type="number" placeholder="Taux Qualité (%)" min="0" max="100" step="0.1" />
+        <input id="objectifArrets" type="number" placeholder="Max Arrêts (nombre)" min="0" step="1" />
+    </div>
+    
+    <button id="saveObjectifsBtn" style="background: linear-gradient(135deg, var(--warning) 0%, #e67e22 100%); color: white; padding: 12px; width: 100%; margin-top: 10px;" onclick="saveObjectifs()">
+        💾 ENREGISTRER LES OBJECTIFS
+    </button>
+    
+    <div class="stats-container" style="margin-top: 15px; grid-template-columns: repeat(2, 1fr);">
+        <div class="stat-box" style="border-left-color: var(--warning);">
+            <span>Production Cible</span>
+            <span class="stat-value" id="displayProdObjectif" style="color:var(--warning);">-</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--warning);">
+            <span>TRS Cible</span>
+            <span class="stat-value" id="displayTRSObjectif" style="color:var(--warning);">-</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--warning);">
+            <span>Qualité Cible</span>
+            <span class="stat-value" id="displayQualiteObjectif" style="color:var(--warning);">-</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--warning);">
+            <span>Arrêts Max</span>
+            <span class="stat-value" id="displayArretsObjectif" style="color:var(--warning);">-</span>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION EPO/RENDEMENT AUTO-CALCULÉ -->
+<div style="margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); position: relative;">
+    <h2 style="color:var(--success); text-align:center; margin-bottom:15px; font-size: 18px;">
+        📊 INDICATEURS DE PERFORMANCE (EPO) 
+        <span style="font-size: 12px; color: #ccc; font-weight: normal;">
+            - CALCUL AUTO
+        </span>
+    </h2>
+    
+    <!-- Bandeau d'information -->
+    <div style="padding: 8px 12px; background: rgba(42, 157, 143, 0.1); border-radius: 6px; margin-bottom: 15px; border-left: 3px solid var(--success);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🤖</span>
+            <div style="font-size: 12px; color: #ccc;">
+                <strong>Calcul automatique</strong> basé sur les arrêts enregistrés<br>
+                Pas de saisie nécessaire - Mise à jour en temps réel
+            </div>
+        </div>
+    </div>
+    
+    <div class="stats-container" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-box" style="border-left-color: var(--success);">
+            <span>Disponibilité</span>
+            <span class="stat-value" id="disponibilite" style="color:var(--success);">0%</span>
+            <div style="font-size: 10px; color: #888; margin-top: 3px;">
+                Temps production
+            </div>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--success);">
+            <span>Performance</span>
+            <span class="stat-value" id="performance" style="color:var(--success);">0%</span>
+            <div style="font-size: 10px; color: #888; margin-top: 3px;">
+                Efficacité ligne
+            </div>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--success);">
+            <span>Qualité</span>
+            <span class="stat-value" id="qualite" style="color:var(--success);">0%</span>
+            <div style="font-size: 10px; color: #888; margin-top: 3px;">
+                Taux conformité
+            </div>
+        </div>
+    </div>
+    
+    <!-- RENDEMENT GLOBAL -->
+    <div class="stat-box" style="border-left-color: var(--primary); margin-top: 15px; grid-column: 1 / 4; text-align: center; position: relative;">
+        <div style="position: absolute; top: 10px; right: 10px; font-size: 10px; color: #ccc; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 10px;">
+            AUTO
+        </div>
+        <span style="font-size: 16px; font-weight: bold; color: var(--primary);">RENDEMENT OPÉRATIONNEL GLOBAL</span>
+        <span class="stat-value" id="rendementGlobal" style="color:var(--primary); font-size: 32px;">0%</span>
+        <div style="font-size: 12px; color: #ccc; margin-top: 5px;">
+            EPO = Disponibilité × Performance × Qualité
+        </div>
+        <div class="info-calcul" style="font-size: 11px; color: #999; margin-top: 8px; text-align: center;">
+            📊 En attente de données...
+        </div>
+    </div>
+    
+    <!-- LÉGENDE DES CALCULS -->
+    <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+        <div style="font-size: 11px; color: #aaa; text-align: center;">
+            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 5px;">
+                <span><span style="color:var(--success)">●</span> Disponibilité: Temps de production effectif</span>
+                <span><span style="color:var(--success)">●</span> Performance: Rythme vs capacité max</span>
+                <span><span style="color:var(--success)">●</span> Qualité: Basée sur causes d'arrêt</span>
+            </div>
+            <div style="font-size: 10px; color: #777;">
+                ⓘ Mise à jour automatique après chaque arrêt
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+    <h2 style="color:var(--info); text-align:center; margin-bottom:15px; font-size: 18px;">👥 ENREGISTREMENT DES ABSENCES</h2>
+    
+    <div class="input-group">
+        <select id="absenceType">
+            <option value="">-- Type d'Absence --</option>
+            <option value="AA">AA: Absences Autorisé</option>
+            <option value="AI">AI: Absences Irrégulier</option>
+            <option value="CM">CM: Congés Médical</option>
+            <option value="CR">CR: Congés Récupération</option>
+            <option value="CA">CA: Congés Annuels</option>
+            <option value="SU">SU: Suspendu</option>
+        </select>
+        <input id="absencePoste" type="text" placeholder="Poste/Opérateur" />
+    </div>
+    
+    <div class="input-group">
+        <input id="absenceDays" type="number" placeholder="Durée (Jours)" min="0.5" step="0.5" style="margin-bottom: 10px;" />
+        <input id="absenceHours" type="number" placeholder="Durée (Heures - Auto)" min="0.5" step="0.5" style="margin-bottom: 10px;" />
+    </div>
+    
+    <button id="logAbsenceBtn" style="background: linear-gradient(135deg, var(--info) 0%, #0077c2 100%); color: white; padding: 12px; width: 100%;" onclick="logAbsence()">
+        ➕ ENREGISTRER L'ABSENCE
+    </button>
+    
+    <div class="stats-container" style="margin-top: 15px; grid-template-columns: repeat(2, 1fr);">
+        <div class="stat-box" style="border-left-color: var(--info);">
+            <span>Nb Absences (Total)</span>
+            <span class="stat-value" id="totalAbsenceCount" style="color:var(--info);">0</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--info);">
+            <span>Total Jours (Jour)</span>
+            <span class="stat-value" id="absenceTotalDays" style="color:var(--info);">0j</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--info);">
+            <span>Nb Jours d'Absence</span>
+            <span class="stat-value" id="absenceDaysCount" style="color:var(--info);">0</span>
+        </div>
+        <div class="stat-box" style="border-left-color: var(--info);">
+            <span>Nb Absences (Jour)</span>
+            <span class="stat-value" id="todayAbsenceCount" style="color:var(--info);">0</span>
+        </div>
+    </div>
+    
+    <div class="stat-box" style="border-left-color: var(--info); margin-top: 15px; grid-column: 1 / 3;">
+        <h4 style="color:var(--info); margin-top: 0; text-align: center;">Détail par Justificatif (Total Équipe)</h4>
+        <table style="width: 100%; margin-top: 10px; font-size: 14px;" id="absenceBreakdownTable">
+            <thead>
+                <tr>
+                    <th style="padding: 8px;">Type</th>
+                    <th style="padding: 8px;">Poste/Opérateur</th>
+                    <th style="padding: 8px;">Nb Jours</th>
+                </tr>
+            </thead>
+            <tbody id="absenceBreakdownBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<button id="manualSaveBtn" style="margin-top: 10px; width: 100%; background: linear-gradient(135deg, #9d4edd 0%, #560bad 100%); color: white;">
+    💾 Sauvegarder maintenant
+</button>
+
+<div class="button-group-2">
+    <button id="csvBtn">📄 Export Arrêts CSV</button>
+    <button id="csvAbsencesBtn">📄 Export Absences CSV</button>
+</div>
+
+<div class="button-group-3">
+    <button id="whBtn">📲 WhatsApp Rapport Rapide</button>
+    <button id="whShiftBtn">📋 WhatsApp Fin Shift</button>
+</div>
+
+<button id="clearBtn" style="margin-top: 10px; width: 100%;">🗑️ Effacer Données</button>
+
+<!-- MODIFICATION: Tableau avec édition en ligne -->
+<div style="overflow-x: auto;">
+    <table id="tableHist">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Cause</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Durée</th>
+                <th>Équipe</th>
+                <!-- CHANGÉ: Team Leader au lieu de Superviseur -->
+                <th>Team Leader</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="showTab('paretoHours')">🕒 Tendance Temporelle</div>
+    <div class="tab" onclick="showTab('paretoCauses')">📊 Pareto 80/20 Causes</div>
+    <div class="tab" onclick="showTab('paretoStops')">📈 Pareto Nombre Arrêts</div>
+    <div class="tab" onclick="showTab('paretoAbsences')">👥 Pareto Absences</div>
+    <div class="tab" onclick="showTab('teamPerformance')">⭐ Performance Équipes</div>
+</div>
+
+<div id="paretoHoursChartContainer" class="chart-container active">
+    <h2 style="color:var(--primary); text-align:center; margin-bottom:20px;">🕒 DISTRIBUTION DES ARRÊTS PAR PLAGE HORAIRE</h2>
+    <div class="filter-group">
+        <div class="filter-btn active" onclick="filterHours('all')">Toutes Équipes</div>
+        <div class="filter-btn" onclick="filterHours('A')">Équipe A</div>
+        <div class="filter-btn" onclick="filterHours('B')">Équipe B</div>
+        <div class="filter-btn" onclick="filterHours('C')">Équipe C</div>
+        <div class="filter-btn" onclick="filterHours('D')">Équipe D</div>
+    </div>
+    <div class="filter-group" style="margin-top: 10px;">
+        <div class="filter-btn active" onclick="setChartPeriod('all')">Tous shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('today')">Shift actuel</div>
+        <div class="filter-btn" onclick="setChartPeriod('week')">7 derniers shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('month')">30 derniers shifts</div>
+    </div>
+    <canvas id="paretoHoursChart"></canvas>
+</div>
+
+<div id="paretoCausesChartContainer" class="chart-container">
+    <h2 style="color:var(--primary); text-align:center; margin-bottom:20px;">📊 PARETO 80/20 DES CAUSES (DURÉE)</h2>
+    <div class="filter-group">
+        <div class="filter-btn active" onclick="filterCauses('all')">Toutes Équipes</div>
+        <div class="filter-btn" onclick="filterCauses('A')">Équipe A</div>
+        <div class="filter-btn" onclick="filterCauses('B')">Équipe B</div>
+        <div class="filter-btn" onclick="filterCauses('C')">Équipe C</div>
+        <div class="filter-btn" onclick="filterCauses('D')">Équipe D</div>
+    </div>
+    <div class="filter-group" style="margin-top: 10px;">
+        <div class="filter-btn active" onclick="setChartPeriod('all')">Tous shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('today')">Shift actuel</div>
+        <div class="filter-btn" onclick="setChartPeriod('week')">7 derniers shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('month')">30 derniers shifts</div>
+    </div>
+    <canvas id="paretoCausesChart"></canvas>
+</div>
+
+<div id="paretoStopsChartContainer" class="chart-container">
+    <h2 style="color:var(--primary); text-align:center; margin-bottom:20px;">📈 PARETO 80/20 DU NOMBRE D'ARRÊTS</h2>
+    <div class="filter-group">
+        <div class="filter-btn active" onclick="filterStops('all')">Toutes Équipes</div>
+        <div class="filter-btn" onclick="filterStops('A')">Équipe A</div>
+        <div class="filter-btn" onclick="filterStops('B')">Équipe B</div>
+        <div class="filter-btn" onclick="filterStops('C')">Équipe C</div>
+        <div class="filter-btn" onclick="filterStops('D')">Équipe D</div>
+    </div>
+    <div class="filter-group" style="margin-top: 10px;">
+        <div class="filter-btn active" onclick="setChartPeriod('all')">Tous shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('today')">Shift actuel</div>
+        <div class="filter-btn" onclick="setChartPeriod('week')">7 derniers shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('month')">30 derniers shifts</div>
+    </div>
+    <canvas id="paretoStopsChart"></canvas>
+</div>
+
+<div id="paretoAbsencesChartContainer" class="chart-container">
+    <h2 style="color:var(--info); text-align:center; margin-bottom:20px;">📊 PARETO 80/20 DES ABSENCES (JOURS)</h2>
+    <div class="filter-group">
+        <div class="filter-btn active" onclick="filterAbsences('all')">Toutes Équipes</div>
+        <div class="filter-btn" onclick="filterAbsences('A')">Équipe A</div>
+        <div class="filter-btn" onclick="filterAbsences('B')">Équipe B</div>
+        <div class="filter-btn" onclick="filterAbsences('C')">Équipe C</div>
+        <div class="filter-btn" onclick="filterAbsences('D')">Équipe D</div>
+    </div>
+    <div class="filter-group" style="margin-top: 10px;">
+        <div class="filter-btn active" onclick="setChartPeriod('all')">Tous shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('today')">Shift actuel</div>
+        <div class="filter-btn" onclick="setChartPeriod('week')">7 derniers shifts</div>
+        <div class="filter-btn" onclick="setChartPeriod('month')">30 derniers shifts</div>
+    </div>
+    <canvas id="paretoAbsencesChart"></canvas>
+</div>
+
+<div id="teamPerformanceChartContainer" class="chart-container">
+    <h2 style="color:var(--primary); text-align:center; margin-bottom:20px;">👥 PERFORMANCE PAR ÉQUIPE</h2>
+    <div class="filter-group">
+        <div class="filter-btn active" onclick="filterPerformance('today')">Shift actuel</div>
+        <div class="filter-btn" onclick="filterPerformance('week')">7 derniers shifts</div>
+        <div class="filter-btn" onclick="filterPerformance('month')">30 derniers shifts</div>
+        <div class="filter-btn" onclick="filterPerformance('all')">Tous shifts</div>
+    </div>
+    <div class="filter-group" style="margin-top: 10px;">
+        <div class="filter-btn active" onclick="filterMetric('duration')">Par Durée</div>
+        <div class="filter-btn" onclick="filterMetric('stops')">Par Nombre d'Arrêts</div>
+        <div class="filter-btn" onclick="filterMetric('efficiency')">Par Efficacité</div>
+    </div>
+    <canvas id="teamPerformanceChart"></canvas>
+</div>
+
+<div class="modal" id="missedStopModal">
+    <div class="modal-content">
+        <h3 style="color:var(--warning);">⏱️ AJOUTER UN ARRÊT RATÉ</h3>
+        
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px;">Date de l'arrêt :</label>
+            <input type="date" id="missedDate" style="width: 100%;">
+        </div>
+        
+        <div class="input-group" style="margin: 15px 0;">
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Heure de début :</label>
+                <input type="time" id="missedStart" style="width: 100%;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Heure de fin :</label>
+                <input type="time" id="missedEnd" style="width: 100%;">
+            </div>
+        </div>
+        
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px;">Durée (minutes) :</label>
+            <input type="number" id="missedDuration" min="1" step="1" placeholder="Saisir la durée en minutes" style="width: 100%;" oninput="updateMissedTimes()">
+        </div>
+        
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px;">Cause de l'arrêt :</label>
+            <select id="missedCause" style="width: 100%;">
+                <option value="">-- Sélectionner une cause --</option>
+                <option value="PAUSE CAFÉ / MIDI">PAUSE CAFÉ / MIDI</option>
+                <option value="Manque composant">Manque composant</option>
+                <option value="Problème machine">Problème machine</option>
+                <option value="Maintenance préventive">Maintenance préventive</option>
+                <option value="Réglage machine">Réglage machine</option>
+                <option value="Attente chariot">Attente chariot</option>
+                <option value="Problème qualité">Problème qualité</option>
+                <option value="Absence opérateur">Absence opérateur</option>
+                <option value="Formation">Formation</option>
+                <option value="Incident sécurité">Incident sécurité</option>
+                <option value="Changement outillage">Changement outillage</option>
+                <option value="Nettoyage poste">Nettoyage poste</option>
+                <option value="Attente composant">Attente composant</option>
+                <option value="Panne électrique">Panne électrique</option>
+                <option value="Panne pneumatique">Panne pneumatique</option>
+                <option value="Réunion d'équipe">Réunion d'équipe</option>
+                <option value="OTHER">Autre (saisir ci-dessous)</option>
+            </select>
+            <input type="text" id="missedCustomCause" placeholder="Saisir la cause manuellement..." style="width: 100%; margin-top: 5px; display: none;">
+        </div>
+        
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px;">Équipe concernée :</label>
+            <select id="missedEquipe" style="width: 100%;">
+                <option value="A">Équipe A</option>
+                <option value="B">Équipe B</option>
+                <option value="C">Équipe C</option>
+                <option value="D">Équipe D</option>
+            </select>
+        </div>
+        
+        <div style="margin: 15px 0; padding: 10px; background: rgba(255, 159, 28, 0.1); border-radius: 8px; border-left: 4px solid var(--warning);">
+            <h4 style="color:var(--warning); margin-top: 0;">Résumé de l'arrêt</h4>
+            <div style="font-size: 14px;">
+                <div><strong>Date:</strong> <span id="missedSummaryDate">-</span></div>
+                <div><strong>Période:</strong> <span id="missedSummaryTime">-</span></div>
+                <div><strong>Durée:</strong> <span id="missedSummaryDuration">-</span></div>
+                <div><strong>Cause:</strong> <span id="missedSummaryCause">-</span></div>
+                <div><strong>Équipe:</strong> <span id="missedSummaryEquipe">-</span></div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="saveMissedStop()" style="background:var(--warning); flex:1;">
+                ✅ Enregistrer l'arrêt
+            </button>
+            <button onclick="closeMissedStopModal()" style="background:var(--darker); flex:1;">
+                ❌ Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="clearModal">
+    <div class="modal-content">
+        <h3 style="color:var(--danger);">⚠️ CONFIRMATION</h3>
+        <p>Quelles données voulez-vous effacer ?</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <button onclick="clearHistory('today')" style="background:var(--warning);">
+                Effacer shift actuel seulement
+            </button>
+            <button onclick="clearHistory('equipe')" style="background:var(--primary);">
+                Effacer mon équipe seulement
+            </button>
+            <button onclick="clearHistory('all')" style="background:var(--danger);">
+                Effacer TOUTES les données (Arrêts & Absences)
+            </button>
+            <button onclick="cancelClear()" style="background:var(--darker);">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="shiftModal">
+    <div class="modal-content">
+        <h3 style="color:var(--primary);">📋 RAPPORT FIN DE SHIFT</h3>
+        <p>Sélectionnez l'équipe pour le rapport :</p>
+        <div class="filter-group" style="margin: 15px 0;">
+            <div class="filter-btn active" onclick="selectReportTeam('A')">Équipe A</div>
+            <div class="filter-btn" onclick="selectReportTeam('B')">Équipe B</div>
+            <div class="filter-btn" onclick="selectReportTeam('C')">Équipe C</div>
+            <div class="filter-btn" onclick="selectReportTeam('D')">Équipe D</div>
+        </div>
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px;">Période :</label>
+            <select id="periodSelect" style="width: 100%;">
+                <option value="today">Shift actuel</option>
+                <option value="week">7 derniers shifts</option>
+                <option value="month">30 derniers shifts</option>
+                <option value="all">Tous shifts</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="sendShiftReport()" style="background:var(--primary); flex:1;">
+                📤 Envoyer WhatsApp
+            </button>
+            <button onclick="closeShiftModal()" style="background:var(--darker); flex:1;">
+                Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<audio id="alarm" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" loop></audio>
+<audio id="resumeSound" src="https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg"></audio>
+<audio id="pauseStartAlarm" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="pauseEndAlarm" src="https://actions.google.com/sounds/v1/alarms/medium_bell.ogg"></audio>
+<audio id="autoSaveSound" src="https://actions.google.com/sounds/v1/office/computer_typing.ogg"></audio>
+<audio id="pauseReminderSound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" loop></audio>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// =============================================
+// INITIALISATION
+// =============================================
+let start = null;
+let timerInterval = null;
+let history = JSON.parse(localStorage.getItem("HISTO") || "[]");
+let absenceHistory = JSON.parse(localStorage.getItem("ABSENCES") || "[]"); 
+let equipe = "A";
+let charts = {
+    paretoHours: null,
+    paretoCauses: null,
+    paretoStops: null,
+    teamPerformance: null,
+    paretoAbsences: null 
+};
+let currentReportTeam = 'A';
+let currentFilter = {
+    hours: 'all',
+    causes: 'all',
+    stops: 'all',
+    performance: 'today',
+    metric: 'duration',
+    absences: 'all',
+    period: 'all'
+};
+
+// Variables pour la gestion des shifts 3x8
+let shiftConfigs = {
+    'Nuit': { start: 22, end: 6, name: 'Nuit (22h-6h)' },
+    'Matin': { start: 6, end: 14, name: 'Matin (6h-14h)' },
+    'Après-midi': { start: 14, end: 22, name: 'Après-midi (14h-22h)' }
+};
+let currentShiftType = 'Nuit'; // Shift par défaut
+let selectedShiftDate = null; // Date de shift sélectionnée manuellement
+
+// Variables pour les alarmes de pause
+let pauseAlarmTimeouts = [];
+let activeAlarms = [];
+let lastSaveTime = Date.now();
+let saveInterval;
+let db = null;
+
+// Valeurs par défaut pour les pauses
+const defaultPauses = {
+    p1Start: "08:00", p1End: "08:05",
+    p2Start: "10:00", p2End: "10:05",
+    p3Start: "12:00", p3End: "12:20",
+};
+
+// Variables pour Team Leader
+let teamLeader = localStorage.getItem("TEAM_LEADER") || "";
+
+// Variables pour les objectifs et EPO
+let objectifs = JSON.parse(localStorage.getItem("OBJECTIFS") || "{}");
+
+// Variables pour l'édition en ligne
+let editingRowIndex = -1;
+let editingCellIndex = -1;
+
+// =============================================
+// FONCTIONS POUR TEAM LEADER
+// =============================================
+
+function saveTeamLeader() {
+    const teamLeaderInput = document.getElementById("teamLeader");
+    if (teamLeaderInput) {
+        teamLeader = teamLeaderInput.value.trim();
+        localStorage.setItem("TEAM_LEADER", teamLeader);
+        
+        // Mettre à jour la couleur du champ
+        teamLeaderInput.style.color = "#FFD700";
+        teamLeaderInput.style.borderColor = "#FFD700";
+        
+        showNotification("✅ Team Leader sauvegardé: " + teamLeader, "success");
+        
+        // Mettre à jour tous les arrêts existants avec le nouveau Team Leader
+        updateExistingStopsWithTeamLeader();
+    }
+}
+
+function updateExistingStopsWithTeamLeader() {
+    if (!teamLeader) return;
+    
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    
+    // Mettre à jour tous les arrêts du shift actuel sans Team Leader
+    history.forEach((stop, index) => {
+        if (stop.date === shiftDate && stop.equipe === equipe && (!stop.teamLeader || stop.teamLeader === "")) {
+            stop.teamLeader = teamLeader;
+        }
+    });
+    
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    refreshTable();
+}
+
+// =============================================
+// FONCTIONS D'ÉDITION EN LIGNE
+// =============================================
+
+function makeCellEditable(cell, rowIndex, cellIndex) {
+    const originalContent = cell.innerHTML;
+    const stop = history[rowIndex];
+    
+    // Créer l'input d'édition
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "editable-input";
+    input.value = getCellValue(stop, cellIndex);
+    
+    // Remplacer le contenu de la cellule par l'input
+    cell.innerHTML = "";
+    cell.appendChild(input);
+    cell.classList.add("editing");
+    
+    // Focus sur l'input
+    input.focus();
+    input.select();
+    
+    // Sauvegarder au blur
+    input.addEventListener("blur", function() {
+        saveCellEdit(input.value, rowIndex, cellIndex, cell);
+    });
+    
+    // Sauvegarder avec Enter
+    input.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            saveCellEdit(input.value, rowIndex, cellIndex, cell);
+        }
+        if (e.key === "Escape") {
+            cancelCellEdit(originalContent, cell);
+        }
+    });
+}
+
+function getCellValue(stop, cellIndex) {
+    switch(cellIndex) {
+        case 0: // Date
+            return stop.date || "";
+        case 1: // Cause
+            return stop.cause || "";
+        case 2: // Début
+            return stop.start || "";
+        case 3: // Fin
+            return stop.end || "";
+        case 5: // Team Leader
+            return stop.teamLeader || "";
+        default:
+            return "";
+    }
+}
+
+function saveCellEdit(newValue, rowIndex, cellIndex, cell) {
+    const stop = history[rowIndex];
+    
+    // Mettre à jour la valeur selon la colonne
+    switch(cellIndex) {
+        case 0: // Date
+            stop.date = newValue;
+            break;
+        case 1: // Cause
+            stop.cause = newValue;
+            break;
+        case 2: // Début
+            stop.start = newValue;
+            // Recalculer la durée si nécessaire
+            if (stop.end) {
+                const startTime = parseTime(stop.start);
+                const endTime = parseTime(stop.end);
+                if (startTime && endTime) {
+                    stop.duration = calculateDurationInSeconds(stop.start, stop.end);
+                }
+            }
+            break;
+        case 3: // Fin
+            stop.end = newValue;
+            // Recalculer la durée si nécessaire
+            if (stop.start) {
+                stop.duration = calculateDurationInSeconds(stop.start, stop.end);
+            }
+            break;
+        case 5: // Team Leader
+            stop.teamLeader = newValue;
+            break;
+    }
+    
+    // Mettre à jour le timestamp
+    stop.timestamp = Date.now();
+    
+    // Sauvegarder
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    if (db) saveToIndexedDB();
+    
+    // Rafraîchir le tableau
+    refreshTable();
+    
+    showNotification("✅ Modification sauvegardée", "success");
+}
+
+function cancelCellEdit(originalContent, cell) {
+    cell.innerHTML = originalContent;
+    cell.classList.remove("editing");
+}
+
+function parseTime(timeStr) {
+    if (!timeStr) return null;
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+        return {
+            hours: parseInt(parts[0]),
+            minutes: parseInt(parts[1]),
+            seconds: parts[2] ? parseInt(parts[2]) : 0
+        };
+    }
+    return null;
+}
+
+function calculateDurationInSeconds(startStr, endStr) {
+    const start = parseTime(startStr);
+    const end = parseTime(endStr);
+    
+    if (!start || !end) return 0;
+    
+    let startSeconds = start.hours * 3600 + start.minutes * 60 + start.seconds;
+    let endSeconds = end.hours * 3600 + end.minutes * 60 + end.seconds;
+    
+    // Gérer le cas où l'arrêt traverse minuit
+    if (endSeconds < startSeconds) {
+        endSeconds += 24 * 3600;
+    }
+    
+    return endSeconds - startSeconds;
+}
+
+// =============================================
+// CALCUL AUTOMATIQUE DU RENDEMENT EPO
+// =============================================
+
+function calculerRendementAuto() {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    // 1. Calcul du temps disponible (durée du shift)
+    let tempsShift = 8 * 60; // 8h en minutes par défaut
+    if (config.start < config.end) {
+        tempsShift = (config.end - config.start) * 60;
+    } else {
+        tempsShift = ((24 - config.start) + config.end) * 60;
+    }
+    
+    // 2. Récupérer les arrêts du shift actuel
+    const filteredStops = history.filter(h => h.equipe === equipe && h.date === shiftDate);
+    const totalDurationGross = filteredStops.reduce((a, b) => a + b.duration, 0);
+    const totalDurationMinutes = totalDurationGross / 60;
+    
+    // 3. Calcul Disponibilité
+    const tempsDisponible = Math.max(0, tempsShift - totalDurationMinutes);
+    const disponibilite = tempsShift > 0 ? (tempsDisponible / tempsShift) * 100 : 0;
+    
+    // 4. Calcul Performance (estimation automatique)
+    let performance = 100;
+    if (filteredStops.length > 0) {
+        const avgStopDuration = totalDurationMinutes / filteredStops.length;
+        // Si durée moyenne arrêt > 10min, pénalité performance
+        if (avgStopDuration > 10) {
+            performance = Math.max(60, 100 - ((avgStopDuration - 10) * 2));
+        }
+        // Si beaucoup d'arrêts courts, bonne performance
+        if (filteredStops.length > 5 && avgStopDuration < 5) {
+            performance = Math.min(100, 95 + (filteredStops.length * 0.5));
+        }
+    }
+    
+    // 5. Calcul Qualité (estimation basée sur causes)
+    let qualite = 99.5; // Valeur par défaut
+    const causesQualite = ["Problème qualité", "Manque composant", "Absence opérateur"];
+    const qualiteStops = filteredStops.filter(h => 
+        causesQualite.some(cause => h.cause.includes(cause))
+    ).length;
+    
+    // Pénalité qualité si arrêts qualité
+    if (qualiteStops > 0) {
+        qualite = Math.max(95, 100 - (qualiteStops * 0.5));
+    }
+    
+    // Bonus si peu d'arrêts
+    if (filteredStops.length <= 3) {
+        qualite = Math.min(100, qualite + 0.3);
+    }
+    
+    // 6. Calcul Rendement Global (EPO)
+    const rendementGlobal = (disponibilite * performance * qualite) / 10000;
+    
+    return {
+        disponibilite: Math.round(disponibilite * 10) / 10,
+        performance: Math.round(performance * 10) / 10,
+        qualite: Math.round(qualite * 10) / 10,
+        rendementGlobal: Math.round(rendementGlobal * 10) / 10,
+        tempsDisponible: Math.round(tempsDisponible),
+        totalArrets: filteredStops.length,
+        dureeMoyenneArret: filteredStops.length > 0 ? 
+            Math.round(totalDurationMinutes / filteredStops.length * 10) / 10 : 0
+    };
+}
+
+function mettreAJourRendementAuto() {
+    const rendement = calculerRendementAuto();
+    
+    // Mettre à jour l'affichage
+    document.getElementById("disponibilite").textContent = rendement.disponibilite + "%";
+    document.getElementById("performance").textContent = rendement.performance + "%";
+    document.getElementById("qualite").textContent = rendement.qualite + "%";
+    document.getElementById("rendementGlobal").textContent = rendement.rendementGlobal + "%";
+    
+    // Afficher les infos de calcul
+    const infoElement = document.querySelector('.info-calcul');
+    if (infoElement) {
+        infoElement.innerHTML = `
+            📊 Calcul auto: ${rendement.totalArrets} arrêts (moy: ${rendement.dureeMoyenneArret}min)<br>
+            ⏱️ Temps disponible: ${rendement.tempsDisponible}/${480}min
+        `;
+    }
+    
+    // Vérifier les objectifs automatiquement
+    verifierObjectifsAuto(rendement);
+}
+
+// =============================================
+// FONCTIONS POUR OBJECTIFS
+// =============================================
+
+function saveObjectifs() {
+    const prod = document.getElementById("objectifProd").value;
+    const trs = document.getElementById("objectifTRS").value;
+    const qualite = document.getElementById("objectifQualite").value;
+    const arrets = document.getElementById("objectifArrets").value;
+    
+    objectifs = {
+        production: prod ? parseInt(prod) : null,
+        trs: trs ? parseFloat(trs) : null,
+        qualite: qualite ? parseFloat(qualite) : null,
+        arrets: arrets ? parseInt(arrets) : null,
+        date: getShiftDate(new Date()),
+        equipe: equipe
+    };
+    
+    localStorage.setItem("OBJECTIFS", JSON.stringify(objectifs));
+    if (db) saveToIndexedDB();
+    
+    updateObjectifsDisplay();
+    mettreAJourRendementAuto();
+    showNotification("✅ Objectifs enregistrés pour le shift", "success");
+}
+
+function updateObjectifsDisplay() {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    
+    // Vérifier si les objectifs sont pour le shift actuel
+    if (objectifs.date === shiftDate && objectifs.equipe === equipe) {
+        document.getElementById("displayProdObjectif").textContent = 
+            objectifs.production ? objectifs.production + " u" : "-";
+        document.getElementById("displayTRSObjectif").textContent = 
+            objectifs.trs ? objectifs.trs + "%" : "-";
+        document.getElementById("displayQualiteObjectif").textContent = 
+            objectifs.qualite ? objectifs.qualite + "%" : "-";
+        document.getElementById("displayArretsObjectif").textContent = 
+            objectifs.arrets ? objectifs.arrets : "-";
+    } else {
+        document.getElementById("displayProdObjectif").textContent = "-";
+        document.getElementById("displayTRSObjectif").textContent = "-";
+        document.getElementById("displayQualiteObjectif").textContent = "-";
+        document.getElementById("displayArretsObjectif").textContent = "-";
+    }
+}
+
+function verifierObjectifsAuto(rendement) {
+    if (!objectifs.date || objectifs.date !== getShiftDate(new Date()) || objectifs.equipe !== equipe) {
+        return;
+    }
+    
+    const filteredStops = history.filter(h => 
+        h.equipe === equipe && h.date === getShiftDate(new Date())
+    );
+    
+    let messages = [];
+    let couleur = "var(--success)";
+    
+    // Vérification TRS (Disponibilité)
+    if (objectifs.trs) {
+        if (rendement.disponibilite >= objectifs.trs) {
+            messages.push(`✅ TRS: ${rendement.disponibilite}% ≥ ${objectifs.trs}%`);
+        } else {
+            messages.push(`⚠️ TRS: ${rendement.disponibilite}% < ${objectifs.trs}%`);
+            couleur = "var(--warning)";
+        }
+    }
+    
+    // Vérification Qualité
+    if (objectifs.qualite) {
+        if (rendement.qualite >= objectifs.qualite) {
+            messages.push(`✅ Qualité: ${rendement.qualite}% ≥ ${objectifs.qualite}%`);
+        } else {
+            messages.push(`⚠️ Qualité: ${rendement.qualite}% < ${objectifs.qualite}%`);
+            couleur = "var(--warning)";
+        }
+    }
+    
+    // Vérification Arrêts
+    if (objectifs.arrets) {
+        if (filteredStops.length <= objectifs.arrets) {
+            messages.push(`✅ Arrêts: ${filteredStops.length} ≤ ${objectifs.arrets}`);
+        } else {
+            messages.push(`⚠️ Arrêts: ${filteredStops.length} > ${objectifs.arrets}`);
+            couleur = "var(--danger)";
+        }
+    }
+    
+    // Affichage notification si besoin
+    if (messages.length > 0 && filteredStops.length > 0) {
+        afficherNotificationObjectifs(messages, couleur);
+    }
+}
+
+function afficherNotificationObjectifs(messages, couleur) {
+    // Vérifier si une notification existe déjà
+    if (document.getElementById('notification-objectifs-auto')) {
+        return;
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'notification-objectifs-auto';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(13, 27, 42, 0.95);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideInUp 0.3s ease-out;
+        max-width: 400px;
+        border-left: 4px solid ${couleur};
+        font-size: 12px;
+        backdrop-filter: blur(10px);
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+            <span style="font-size: 16px;">🎯</span>
+            <div style="font-weight: bold; color: ${couleur};">OBJECTIFS SHIFT</div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="margin-left: auto; background: none; border: none; color: #ccc; cursor: pointer; font-size: 18px;">
+                ×
+            </button>
+        </div>
+        <div style="font-size: 11px;">
+            ${messages.join('<br>')}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-suppression après 15 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutDown 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 15000);
+}
+
+// =============================================
+// FONCTIONS DE GESTION DES SHIFTS 3x8
+// =============================================
+
+function getShiftDate(date) {
+    if (selectedShiftDate) {
+        return selectedShiftDate;
+    }
+    
+    const hour = date.getHours();
+    const shiftDate = new Date(date);
+    
+    // Logique pour déterminer la date du shift selon l'heure
+    const shiftTypes = Object.keys(shiftConfigs);
+    for (const shiftType of shiftTypes) {
+        const config = shiftConfigs[shiftType];
+        
+        if (config.start < config.end) {
+            // Shift normal (dans la même journée)
+            if (hour >= config.start && hour < config.end) {
+                currentShiftType = shiftType;
+                return formatShiftDate(shiftDate);
+            }
+        } else {
+            // Shift qui traverse minuit (ex: 22h-6h)
+            if (hour >= config.start || hour < config.end) {
+                currentShiftType = shiftType;
+                if (hour < config.end) {
+                    // Après minuit, c'est le shift de la veille
+                    shiftDate.setDate(shiftDate.getDate() - 1);
+                }
+                return formatShiftDate(shiftDate);
+            }
+        }
+    }
+    
+    // Par défaut, retourner la date du jour avec shift Nuit
+    currentShiftType = 'Nuit';
+    return formatShiftDate(shiftDate);
+}
+
+function formatShiftDate(date) {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// Fonction pour convertir une date shift en objet Date
+function shiftDateToDate(shiftDateStr) {
+    const [day, month, year] = shiftDateStr.split('/').map(Number);
+    const date = new Date(year, month - 1, day);
+    
+    // Ajouter l'heure de début du shift pour une comparaison correcte
+    const config = shiftConfigs[currentShiftType];
+    date.setHours(config.start, 0, 0, 0);
+    
+    return date;
+}
+
+function selectShift(shiftType) {
+    if (!shiftConfigs[shiftType]) return;
+    
+    currentShiftType = shiftType;
+    const config = shiftConfigs[shiftType];
+    
+    // Mettre à jour l'affichage des boutons
+    document.querySelectorAll('#shiftSelector button').forEach(btn => {
+        btn.style.background = 'var(--dark)';
+        btn.style.color = 'white';
+        btn.style.fontWeight = 'normal';
+    });
+    
+    // Gérer les caractères spéciaux dans l'ID
+    let buttonId = '';
+    if (shiftType === 'Après-midi') {
+        buttonId = 'shiftApresMidiBtn';
+    } else {
+        buttonId = `shift${shiftType}Btn`;
+    }
+    
+    const activeBtn = document.getElementById(buttonId);
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--primary)';
+        activeBtn.style.color = 'white';
+        activeBtn.style.fontWeight = 'bold';
+    }
+    
+    // Mettre à jour l'indicateur
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    document.getElementById("currentShiftDate").textContent = shiftDate;
+    document.getElementById("currentShiftHours").textContent = config.name.split('(')[1].replace(')', '');
+    
+    // Rafraîchir les données
+    refreshTable();
+    updateAllCharts();
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('selectedShift', shiftType);
+    if (db) saveToIndexedDB();
+    
+    showNotification(`Shift ${shiftType} sélectionné`, 'success');
+}
+
+// Sélectionner un shift spécifique avec date
+function selectSpecificShift() {
+    const datePicker = document.getElementById("shiftDatePicker");
+    if (!datePicker.value) {
+        alert("Veuillez sélectionner une date");
+        return;
+    }
+    
+    const date = new Date(datePicker.value);
+    const shiftDate = formatShiftDate(date);
+    selectedShiftDate = shiftDate;
+    
+    // Mettre à jour l'affichage
+    document.getElementById("currentShiftDate").textContent = selectedShiftDate + ` (${currentShiftType})`;
+    
+    // Rafraîchir les données
+    refreshTable();
+    updateAllCharts();
+    
+    showNotification(`Shift ${currentShiftType} du ${selectedShiftDate} sélectionné`, 'info');
+}
+
+// Revenir au shift actuel
+function resetToCurrentShift() {
+    selectedShiftDate = null;
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    document.getElementById("currentShiftDate").textContent = shiftDate;
+    document.getElementById("currentShiftHours").textContent = config.name.split('(')[1].replace(')', '');
+    document.getElementById("shiftDatePicker").value = "";
+    
+    // Rafraîchir les données
+    refreshTable();
+    updateAllCharts();
+    
+    showNotification(`Retour au shift ${currentShiftType} actuel`, 'success');
+}
+
+// Fonction utilitaire pour filtrer les données par période shift
+function filterByShiftPeriod(data, period, dateField = 'date') {
+    if (period === 'all') return data;
+    
+    const now = new Date();
+    
+    if (period === 'today') {
+        const currentShiftDate = getShiftDate(now);
+        return data.filter(item => item[dateField] === currentShiftDate);
+    }
+    
+    if (period === 'week') {
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const cutoffDate = shiftDateToDate(getShiftDate(oneWeekAgo));
+        
+        return data.filter(item => {
+            const itemDate = shiftDateToDate(item[dateField]);
+            return itemDate >= cutoffDate;
+        });
+    }
+    
+    if (period === 'month') {
+        const oneMonthAgo = new Date(now);
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const cutoffDate = shiftDateToDate(getShiftDate(oneMonthAgo));
+        
+        return data.filter(item => {
+            const itemDate = shiftDateToDate(item[dateField]);
+            return itemDate >= cutoffDate;
+        });
+    }
+    
+    return data;
+}
+
+// =============================================
+// FONCTIONS DE BASE
+// =============================================
+
+function updateDateTime() {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    // Mettre à jour l'indicateur de shift
+    document.getElementById("currentShiftDate").textContent = shiftDate;
+    document.getElementById("currentShiftHours").textContent = config.name.split('(')[1].replace(')', '');
+    
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    document.getElementById('currentTime').textContent = now.toLocaleTimeString('fr-FR');
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+function updateTimer() {
+    if (!start) return;
+    const now = new Date();
+    const diff = Math.floor((now - start) / 1000);
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = diff % 60;
+    document.getElementById('timerDisplay').textContent = 
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function refreshTable() {
+    const tbody = document.getElementById("tableBody");
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    
+    const filtered = history.filter(h => h.equipe === equipe && h.date === shiftDate);
+    
+    tbody.innerHTML = '';
+    filtered.forEach((h, rowIndex) => {
+        const tr = document.createElement('tr');
+        
+        // Ajouter une icône pour les arrêts ratés
+        const missedIcon = h.type === "raté" ? '⏱️ ' : '';
+        
+        // Déterminer la classe de l'équipe pour le style
+        const teamClass = `team-${h.equipe}`;
+        
+        // Créer le contenu des cellules avec édition en ligne
+        tr.innerHTML = `
+            <td class="editable-cell" onclick="makeCellEditable(this, ${rowIndex}, 0)">
+                ${missedIcon}${h.date}
+                <div class="edit-tooltip">Cliquer pour modifier la date</div>
+            </td>
+            <td class="editable-cell" onclick="makeCellEditable(this, ${rowIndex}, 1)">
+                <div style="border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.1); display: inline-block;">${h.cause || ''}</div>
+                <div class="edit-tooltip">Cliquer pour modifier la cause</div>
+            </td>
+            <td class="editable-cell" onclick="makeCellEditable(this, ${rowIndex}, 2)">
+                ${h.start || ''}
+                <div class="edit-tooltip">Cliquer pour modifier l'heure de début</div>
+            </td>
+            <td class="editable-cell" onclick="makeCellEditable(this, ${rowIndex}, 3)">
+                ${h.end || ''}
+                <div class="edit-tooltip">Cliquer pour modifier l'heure de fin</div>
+            </td>
+            <td style="color:${h.duration > 300 ? 'var(--danger)' : 'var(--warning)'};">
+                ${formatDuration(h.duration)} ${h.type === "raté" ? '(raté)' : ''}
+            </td>
+            <td>
+                <div class="team-cell ${teamClass}">Équipe ${h.equipe}</div>
+            </td>
+            <td class="editable-cell" onclick="makeCellEditable(this, ${rowIndex}, 5)">
+                <div style="color: #FFD700; font-weight: bold;">${h.teamLeader || ''}</div>
+                <div class="edit-tooltip">Cliquer pour modifier le Team Leader</div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    const totalDuration = filtered.reduce((a, b) => a + b.duration, 0);
+    const pauseData = calculateTotalPauseMinutes();
+    const totalPauseMinutes = pauseData.total;
+    const pauseSeconds = totalPauseMinutes * 60;
+    const netDurationSeconds = Math.max(0, totalDuration - pauseSeconds);
+    const netDurationMinutes = Math.round(netDurationSeconds / 60);
+
+    document.getElementById("count").innerText = filtered.length;
+    document.getElementById("totalTime").innerText = formatDuration(totalDuration);
+    document.getElementById("netTotalMinutes").innerText = `${netDurationMinutes} min`;
+    document.getElementById("netTotalSeconds").innerText = formatDuration(netDurationSeconds);
+    
+    // Calculer le nombre d'arrêts ratés
+    const missedStopsCount = filtered.filter(h => h.type === "raté").length;
+    document.getElementById("missedStopsCount").innerText = missedStopsCount;
+    
+    refreshAbsenceStats();
+    mettreAJourRendementAuto();
+    updateAllCharts();
+}
+
+function formatDuration(seconds) {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (minutes < 60) return `${minutes}m ${secs}s`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+}
+
+function setCause(cause) {
+    const causeInput = document.getElementById("cause");
+    if (causeInput) {
+        causeInput.value = cause;
+        causeInput.focus();
+    }
+}
+
+function updateAbsenceBreakdown() {
+    const container = document.getElementById("absenceBreakdownBody");
+    if (!container) return;
+
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const teamAbsences = absenceHistory.filter(a => a.equipe === equipe && a.date === shiftDate);
+    
+    container.innerHTML = '';
+    
+    const breakdown = {};
+    
+    teamAbsences.forEach(absence => {
+        const key = `${absence.type}|${absence.poste || 'Non spécifié'}`;
+        if (!breakdown[key]) {
+            breakdown[key] = {
+                type: absence.type,
+                poste: absence.poste || 'Non spécifié',
+                days: 0
+            };
+        }
+        breakdown[key].days += absence.durationDays || 0;
+    });
+    
+    Object.values(breakdown).forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.type}</td>
+            <td>${item.poste}</td>
+            <td>${item.days} jours</td>
+        `;
+        container.appendChild(tr);
+    });
+}
+
+function refreshAbsenceStats() {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const teamAbsences = absenceHistory.filter(a => a.equipe === equipe);
+    const filteredShift = teamAbsences.filter(a => a.date === shiftDate);
+    
+    const totalAbsences = teamAbsences.length;
+    const uniqueDates = new Set(teamAbsences.map(a => a.date));
+    const totalDaysAbsent = uniqueDates.size;
+    const totalDaysShift = filteredShift.reduce((a, b) => a + (b.durationDays || 0), 0);
+    
+    document.getElementById("todayAbsenceCount").innerText = filteredShift.length;
+    document.getElementById("absenceTotalDays").innerText = `${totalDaysShift}j`;
+    document.getElementById("totalAbsenceCount").innerText = totalAbsences;
+    document.getElementById("absenceDaysCount").innerText = totalDaysAbsent;
+    
+    updateAbsenceBreakdown();
+}
+
+function getPauseTime(id, defaultValue) {
+    return localStorage.getItem(id) || defaultValue;
+}
+
+function updatePauseTimes() {
+    const p1s = document.getElementById("p1Start").value;
+    const p1e = document.getElementById("p1End").value;
+    const p2s = document.getElementById("p2Start").value;
+    const p2e = document.getElementById("p2End").value;
+    const p3s = document.getElementById("p3Start").value;
+    const p3e = document.getElementById("p3End").value;
+    
+    localStorage.setItem("PAUSE_1_START", p1s);
+    localStorage.setItem("PAUSE_1_END", p1e);
+    localStorage.setItem("PAUSE_2_START", p2s);
+    localStorage.setItem("PAUSE_2_END", p2e);
+    localStorage.setItem("PAUSE_3_START", p3s);
+    localStorage.setItem("PAUSE_3_END", p3e);
+    
+    refreshTable();
+    schedulePauseAlarms();
+    if (db) saveToIndexedDB();
+}
+
+function calculateDuration(startStr, endStr) {
+    if (!startStr || !endStr) return 0;
+    const [startH, startM] = startStr.split(':').map(Number);
+    const [endH, endM] = endStr.split(':').map(Number);
+    const startTimeInMinutes = startH * 60 + startM;
+    const endTimeInMinutes = endH * 60 + endM;
+    let duration = endTimeInMinutes - startTimeInMinutes;
+    if (duration < 0) return 0;
+    return duration;
+}
+
+function calculateTotalPauseMinutes() {
+    const p1s = getPauseTime("PAUSE_1_START", defaultPauses.p1Start);
+    const p1e = getPauseTime("PAUSE_1_END", defaultPauses.p1End);
+    const p2s = getPauseTime("PAUSE_2_START", defaultPauses.p2Start);
+    const p2e = getPauseTime("PAUSE_2_END", defaultPauses.p2End);
+    const p3s = getPauseTime("PAUSE_3_START", defaultPauses.p3Start);
+    const p3e = getPauseTime("PAUSE_3_END", defaultPauses.p3End);
+    
+    const duration1 = calculateDuration(p1s, p1e);
+    const duration2 = calculateDuration(p2s, p2e);
+    const duration3 = calculateDuration(p3s, p3e);
+    
+    return {
+        total: duration1 + duration2 + duration3,
+        details: [
+            { start: p1s, end: p1e, duration: duration1, name: "Pause 1" },
+            { start: p2s, end: p2e, duration: duration2, name: "Pause 2" },
+            { start: p3s, end: p3e, duration: duration3, name: "Pause 3" }
+        ]
+    };
+}
+
+// =============================================
+// GESTION DES ALARMES DE PAUSE
+// =============================================
+
+function schedulePauseAlarms() {
+    cancelPauseAlarms();
+    
+    const alarmsEnabled = document.getElementById("enableAlarms").checked;
+    if (!alarmsEnabled) return;
+    
+    const alarmMinutes = parseInt(document.getElementById("alarmMinutes").value) || 2;
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const pauseData = calculateTotalPauseMinutes();
+    
+    pauseData.details.forEach((pause, index) => {
+        if (!pause.start || !pause.end) return;
+        
+        const [startHour, startMinute] = pause.start.split(':').map(Number);
+        const [endHour, endMinute] = pause.end.split(':').map(Number);
+        
+        const startTimeInMinutes = startHour * 60 + startMinute;
+        const endTimeInMinutes = endHour * 60 + endMinute;
+        
+        // Alarme avant le début de la pause
+        const timeToStart = startTimeInMinutes - currentTime;
+        if (timeToStart > 0 && timeToStart <= alarmMinutes) {
+            const timeout = setTimeout(() => {
+                triggerPauseAlarm('Début', pause.start, pause.name);
+            }, (timeToStart * 60 * 1000) - (alarmMinutes * 60 * 1000));
+            
+            pauseAlarmTimeouts.push(timeout);
+        }
+        
+        // Alarme avant la fin de la pause
+        const timeToEnd = endTimeInMinutes - currentTime;
+        if (timeToEnd > 0 && timeToEnd <= alarmMinutes) {
+            const timeout = setTimeout(() => {
+                triggerPauseAlarm('Fin', pause.end, pause.name);
+            }, (timeToEnd * 60 * 1000) - (alarmMinutes * 60 * 1000));
+            
+            pauseAlarmTimeouts.push(timeout);
+        }
+    });
+}
+
+function triggerPauseAlarm(type, time, pauseName) {
+    const existingAlarm = activeAlarms.find(a => a.pauseName === pauseName && a.type === type);
+    if (existingAlarm) return;
+    
+    const alarmId = Date.now();
+    const alarm = {
+        id: alarmId,
+        type: type,
+        time: time,
+        pauseName: pauseName,
+        timestamp: Date.now()
+    };
+    
+    activeAlarms.push(alarm);
+    
+    const alarmSound = document.getElementById("pauseReminderSound");
+    if (alarmSound) {
+        alarmSound.currentTime = 0;
+        alarmSound.play().catch(e => console.log("Erreur alarme pause:", e));
+    }
+    
+    showAlarmIndicator(type, time, pauseName);
+    
+    if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
+    }
+    
+    const autoStopTimeout = setTimeout(() => {
+        stopAlarm(alarmId);
+    }, 120000);
+    
+    alarm.autoStopTimeout = autoStopTimeout;
+}
+
+function showAlarmIndicator(type, time, pauseName) {
+    const indicator = document.getElementById("pauseAlarmIndicator");
+    const alarmTitle = document.getElementById("alarmTitle");
+    const alarmMessage = document.getElementById("alarmMessage");
+    
+    if (type === 'Début') {
+        alarmTitle.textContent = "⏰ ALARME DÉBUT DE PAUSE";
+        alarmMessage.innerHTML = `<strong>${pauseName}</strong> commence dans ${document.getElementById("alarmMinutes").value} minutes<br>à ${time}`;
+    } else {
+        alarmTitle.textContent = "⏰ ALARME FIN DE PAUSE";
+        alarmMessage.innerHTML = `<strong>${pauseName}</strong> se termine dans ${document.getElementById("alarmMinutes").value} minutes<br>à ${time}`;
+    }
+    
+    indicator.style.display = 'block';
+}
+
+function stopAlarm(alarmId) {
+    const alarmSound = document.getElementById("pauseReminderSound");
+    if (alarmSound) {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    }
+    
+    const indicator = document.getElementById("pauseAlarmIndicator");
+    indicator.style.display = 'none';
+    
+    const alarmIndex = activeAlarms.findIndex(a => a.id === alarmId);
+    if (alarmIndex !== -1) {
+        if (activeAlarms[alarmIndex].autoStopTimeout) {
+            clearTimeout(activeAlarms[alarmIndex].autoStopTimeout);
+        }
+        activeAlarms.splice(alarmIndex, 1);
+    }
+    
+    if (navigator.vibrate) {
+        navigator.vibrate(0);
+    }
+}
+
+function snoozeAlarm() {
+    const alarmSound = document.getElementById("pauseReminderSound");
+    if (alarmSound) {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    }
+    
+    const indicator = document.getElementById("pauseAlarmIndicator");
+    indicator.style.display = 'none';
+    
+    if (navigator.vibrate) {
+        navigator.vibrate(0);
+    }
+    
+    setTimeout(() => {
+        if (alarmSound) {
+            alarmSound.currentTime = 0;
+            alarmSound.play().catch(e => console.log("Erreur alarme pause:", e));
+        }
+        
+        indicator.style.display = 'block';
+        
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 200, 100, 200]);
+        }
+    }, 300000);
+}
+
+function cancelPauseAlarms() {
+    pauseAlarmTimeouts.forEach(timeout => clearTimeout(timeout));
+    pauseAlarmTimeouts = [];
+    
+    activeAlarms.forEach(alarm => {
+        if (alarm.autoStopTimeout) {
+            clearTimeout(alarm.autoStopTimeout);
+        }
+    });
+    activeAlarms = [];
+    
+    const alarmSound = document.getElementById("pauseReminderSound");
+    if (alarmSound) {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    }
+    
+    const indicator = document.getElementById("pauseAlarmIndicator");
+    indicator.style.display = 'none';
+    
+    if (navigator.vibrate) {
+        navigator.vibrate(0);
+    }
+}
+
+function toggleAlarms() {
+    const alarmsEnabled = document.getElementById("enableAlarms").checked;
+    if (alarmsEnabled) {
+        schedulePauseAlarms();
+        showNotification("🔔 Alarmes de pause activées", "success");
+    } else {
+        cancelPauseAlarms();
+        showNotification("🔕 Alarmes de pause désactivées", "warning");
+    }
+}
+
+function testAlarm() {
+    const alarmMinutes = parseInt(document.getElementById("alarmMinutes").value) || 2;
+    const now = new Date();
+    const testTime = new Date(now.getTime() + 1000);
+    
+    const hours = testTime.getHours().toString().padStart(2, '0');
+    const minutes = testTime.getMinutes().toString().padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    
+    triggerPauseAlarm('Début', timeStr, "Pause test");
+    showNotification("🔔 Test d'alarme déclenché", "info");
+}
+
+// =============================================
+// GESTION DES ARRÊTS RATÉS
+// =============================================
+
+document.getElementById("missedStopBtn").onclick = openMissedStopModal;
+
+function openMissedStopModal() {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().substring(0, 5);
+    
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
+    const fiveMinutesAgoTime = fiveMinutesAgo.toTimeString().substring(0, 5);
+    
+    document.getElementById("missedDate").value = today;
+    document.getElementById("missedStart").value = fiveMinutesAgoTime;
+    document.getElementById("missedEnd").value = currentTime;
+    document.getElementById("missedDuration").value = 5;
+    document.getElementById("missedCause").value = "";
+    document.getElementById("missedCustomCause").style.display = "none";
+    document.getElementById("missedCustomCause").value = "";
+    document.getElementById("missedEquipe").value = equipe;
+    
+    updateMissedStopSummary();
+    
+    document.getElementById("missedStopModal").style.display = "flex";
+}
+
+function closeMissedStopModal() {
+    document.getElementById("missedStopModal").style.display = "none";
+}
+
+function updateMissedTimes() {
+    const duration = parseInt(document.getElementById("missedDuration").value) || 5;
+    const startTime = document.getElementById("missedStart").value;
+    
+    if (startTime) {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const startDate = new Date();
+        startDate.setHours(hours, minutes, 0, 0);
+        
+        const endDate = new Date(startDate.getTime() + duration * 60000);
+        const endHours = endDate.getHours().toString().padStart(2, '0');
+        const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+        
+        document.getElementById("missedEnd").value = `${endHours}:${endMinutes}`;
+    }
+    
+    updateMissedStopSummary();
+}
+
+function updateMissedStopSummary() {
+    const date = document.getElementById("missedDate").value;
+    const start = document.getElementById("missedStart").value;
+    const end = document.getElementById("missedEnd").value;
+    const duration = document.getElementById("missedDuration").value;
+    const causeSelect = document.getElementById("missedCause");
+    const cause = causeSelect.value === "OTHER" 
+        ? document.getElementById("missedCustomCause").value 
+        : causeSelect.value;
+    const team = document.getElementById("missedEquipe").value;
+    
+    const dateObj = new Date(date);
+    const formattedDate = dateObj.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    });
+    
+    document.getElementById("missedSummaryDate").textContent = formattedDate;
+    document.getElementById("missedSummaryTime").textContent = `${start} - ${end}`;
+    document.getElementById("missedSummaryDuration").textContent = `${duration} minutes`;
+    document.getElementById("missedSummaryCause").textContent = cause || "-";
+    document.getElementById("missedSummaryEquipe").textContent = `Équipe ${team}`;
+}
+
+document.getElementById("missedCause").onchange = function() {
+    const customCauseField = document.getElementById("missedCustomCause");
+    if (this.value === "OTHER") {
+        customCauseField.style.display = "block";
+    } else {
+        customCauseField.style.display = "none";
+        customCauseField.value = "";
+    }
+    updateMissedStopSummary();
+};
+
+document.getElementById("missedCustomCause").oninput = updateMissedStopSummary;
+document.getElementById("missedDate").onchange = updateMissedStopSummary;
+document.getElementById("missedStart").onchange = updateMissedStopSummary;
+document.getElementById("missedEnd").onchange = updateMissedStopSummary;
+document.getElementById("missedDuration").oninput = updateMissedStopSummary;
+document.getElementById("missedEquipe").onchange = updateMissedStopSummary;
+
+function saveMissedStop() {
+    const date = document.getElementById("missedDate").value;
+    const start = document.getElementById("missedStart").value;
+    const end = document.getElementById("missedEnd").value;
+    const durationMinutes = parseInt(document.getElementById("missedDuration").value) || 0;
+    const causeSelect = document.getElementById("missedCause");
+    const cause = causeSelect.value === "OTHER" 
+        ? document.getElementById("missedCustomCause").value 
+        : causeSelect.value;
+    const team = document.getElementById("missedEquipe").value;
+    
+    if (!date || !start || !end || durationMinutes <= 0) {
+        alert("Veuillez remplir tous les champs obligatoires avec des valeurs valides.");
+        return;
+    }
+    
+    if (!cause || cause.trim() === "") {
+        alert("Veuillez saisir une cause pour l'arrêt.");
+        return;
+    }
+    
+    const dateObj = new Date(date);
+    const formattedDate = getShiftDate(dateObj);
+    
+    const durationSeconds = durationMinutes * 60;
+    
+    const [startHours, startMinutes] = start.split(':').map(Number);
+    const startDateObj = new Date(date);
+    startDateObj.setHours(startHours, startMinutes, 0, 0);
+    const timestamp = startDateObj.getTime();
+    
+    const missedStop = {
+        date: formattedDate,
+        cause: cause,
+        start: start,
+        end: end,
+        duration: durationSeconds,
+        equipe: team,
+        timestamp: timestamp,
+        type: "raté"
+    };
+    
+    history.push(missedStop);
+    
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    if (db) saveToIndexedDB();
+    
+    refreshTable();
+    
+    closeMissedStopModal();
+    
+    alert(`✅ Arrêt raté enregistré avec succès !
+Date: ${formattedDate}
+Période: ${start} - ${end} (${durationMinutes} min)
+Cause: ${cause}
+Équipe: ${team}`);
+    
+    document.getElementById("resumeSound").play().catch(() => {});
+}
+
+// =============================================
+// NOTIFICATIONS
+// =============================================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'warning' ? 'var(--warning)' : type === 'success' ? 'var(--success)' : 'var(--primary)'};
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 20px;">${type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️'}</span>
+            <div>
+                <div style="font-size: 14px; margin-top: 5px;">${message}</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// =============================================
+// GESTION ÉVÉNEMENTS PRINCIPAUX
+// =============================================
+
+document.getElementById("equipe").onchange = e => {
+    equipe = e.target.value;
+    refreshTable();
+    if (db) saveToIndexedDB();
+};
+
+document.getElementById("stopBtn").onclick = () => {
+    if (start) {
+        alert("Un arrêt est déjà en cours !");
+        return;
+    }
+    
+    start = new Date();
+    document.getElementById("alarm").play().catch(e => console.log("Audio error:", e));
+    if (navigator.vibrate) navigator.vibrate([200]);
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+};
+
+document.getElementById("goBtn").onclick = () => {
+    if (!start) {
+        alert("Aucun arrêt en cours !");
+        return;
+    }
+    
+    let end = new Date();
+    let seconds = Math.floor((end - start) / 1000);
+    let cause = document.getElementById("cause").value || "Non spécifié";
+    let currentTeamLeader = document.getElementById("teamLeader").value || teamLeader || "";
+    
+    let row = {
+        date: getShiftDate(start),
+        cause: cause,
+        start: start.toLocaleTimeString(),
+        end: end.toLocaleTimeString(),
+        duration: seconds,
+        equipe: equipe,
+        teamLeader: currentTeamLeader,
+        timestamp: start.getTime()
+    };
+    
+    history.push(row);
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    if (db) saveToIndexedDB();
+    
+    clearInterval(timerInterval);
+    document.getElementById("timerDisplay").textContent = "00:00:00";
+    document.getElementById("alarm").pause();
+    document.getElementById("alarm").currentTime = 0;
+    document.getElementById("resumeSound").play().catch(e => console.log("Audio error:", e));
+    
+    // CHANGÉ: "Team Leader:" au lieu de "Superviseur:"
+    sendWhatsAppResume(cause, seconds, row.start, row.end, currentTeamLeader);
+    
+    start = null;
+    refreshTable();
+    document.getElementById("cause").value = "";
+};
+
+function logAbsence() {
+    const type = document.getElementById("absenceType").value;
+    const poste = document.getElementById("absencePoste").value.trim();
+    const daysInput = document.getElementById("absenceDays").value;
+    const hoursInput = document.getElementById("absenceHours").value;
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    
+    if (!type) {
+        alert("Veuillez sélectionner un type d'absence.");
+        return;
+    }
+    
+    if (!poste) {
+        alert("Veuillez saisir le poste/opérateur.");
+        return;
+    }
+    
+    let durationDays = 0;
+    let durationHours = 0;
+    const HOURS_PER_DAY = 7.6;
+    
+    if (daysInput && !isNaN(parseFloat(daysInput)) && parseFloat(daysInput) > 0) {
+        durationDays = parseFloat(daysInput);
+        durationHours = durationDays * HOURS_PER_DAY;
+    } else if (hoursInput && !isNaN(parseFloat(hoursInput)) && parseFloat(hoursInput) > 0) {
+        durationHours = parseFloat(hoursInput);
+        durationDays = durationHours / HOURS_PER_DAY;
+    } else {
+        alert("Veuillez saisir une durée valide en jours ou en heures.");
+        return;
+    }
+
+    const absence = {
+        date: shiftDate,
+        type: type,
+        poste: poste,
+        durationDays: Math.round(durationDays * 10) / 10,
+        durationHours: Math.round(durationHours * 10) / 10,
+        equipe: equipe,
+        timestamp: Date.now()
+    };
+
+    absenceHistory.push(absence);
+    localStorage.setItem("ABSENCES", JSON.stringify(absenceHistory));
+    if (db) saveToIndexedDB();
+
+    document.getElementById("absenceType").value = "";
+    document.getElementById("absencePoste").value = "";
+    document.getElementById("absenceDays").value = "";
+    document.getElementById("absenceHours").value = "";
+
+    refreshAbsenceStats();
+    alert(`Absence ${type} pour ${poste} enregistrée : ${absence.durationDays} jours (${absence.durationHours}h) pour l'équipe ${equipe}.`);
+}
+
+// =============================================
+// EFFACER LES DONNÉES
+// =============================================
+
+document.getElementById("clearBtn").onclick = () => {
+    document.getElementById("clearModal").style.display = "flex";
+};
+
+function clearHistory(type) {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    
+    switch(type) {
+        case 'today':
+            history = history.filter(h => h.date !== shiftDate);
+            absenceHistory = absenceHistory.filter(a => a.date !== shiftDate);
+            break;
+        case 'equipe':
+            history = history.filter(h => h.equipe !== equipe);
+            absenceHistory = absenceHistory.filter(a => a.equipe !== equipe);
+            break;
+        case 'all':
+            history = [];
+            absenceHistory = [];
+            break;
+    }
+    
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    localStorage.setItem("ABSENCES", JSON.stringify(absenceHistory));
+    
+    if (db) {
+        saveToIndexedDB().then(() => {
+            console.log('Base de données mise à jour après effacement');
+        });
+    }
+    
+    refreshTable();
+    
+    document.getElementById("clearModal").style.display = "none";
+    
+    alert(`Données effacées avec succès (${type === 'today' ? 'shift actuel' : type === 'equipe' ? 'mon équipe' : 'toutes'})`);
+}
+
+function cancelClear() {
+    document.getElementById("clearModal").style.display = "none";
+}
+
+// =============================================
+// INDEXEDDB - SAUVEGARDE ROBUSTE
+// =============================================
+
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('StellantisTrackerDB', 2);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            
+            if (!db.objectStoreNames.contains('arrets')) {
+                const arretsStore = db.createObjectStore('arrets', { 
+                    keyPath: 'id',
+                    autoIncrement: true 
+                });
+                arretsStore.createIndex('timestamp', 'timestamp', { unique: false });
+                arretsStore.createIndex('equipe', 'equipe', { unique: false });
+            }
+            
+            if (!db.objectStoreNames.contains('absences')) {
+                const absencesStore = db.createObjectStore('absences', { 
+                    keyPath: 'id',
+                    autoIncrement: true 
+                });
+                absencesStore.createIndex('timestamp', 'timestamp', { unique: false });
+                absencesStore.createIndex('equipe', 'equipe', { unique: false });
+            }
+            
+            if (!db.objectStoreNames.contains('settings')) {
+                db.createObjectStore('settings', { keyPath: 'key' });
+            }
+        };
+    });
+}
+
+async function saveToIndexedDB() {
+    if (!db) {
+        await openDatabase();
+    }
+    
+    try {
+        const transaction = db.transaction(['arrets', 'absences', 'settings'], 'readwrite');
+        
+        const arretsStore = transaction.objectStore('arrets');
+        arretsStore.clear();
+        history.forEach(arret => {
+            arretsStore.put({
+                ...arret,
+                id: arret.timestamp || Date.now(),
+                synced: false
+            });
+        });
+        
+        const absencesStore = transaction.objectStore('absences');
+        absencesStore.clear();
+        absenceHistory.forEach(absence => {
+            absencesStore.put({
+                ...absence,
+                id: absence.timestamp || Date.now(),
+                synced: false
+            });
+        });
+        
+        const settingsStore = transaction.objectStore('settings');
+        const pauses = {
+            p1Start: document.getElementById("p1Start").value,
+            p1End: document.getElementById("p1End").value,
+            p2Start: document.getElementById("p2Start").value,
+            p2End: document.getElementById("p2End").value,
+            p3Start: document.getElementById("p3Start").value,
+            p3End: document.getElementById("p3End").value
+        };
+        
+        settingsStore.put({ key: 'pauses', value: pauses });
+        settingsStore.put({ key: 'equipe', value: equipe });
+        settingsStore.put({ key: 'selectedShift', value: currentShiftType });
+        settingsStore.put({ key: 'shiftConfigs', value: shiftConfigs });
+        settingsStore.put({ key: 'objectifs', value: objectifs });
+        settingsStore.put({ key: 'teamLeader', value: teamLeader });
+        
+        await transaction.complete;
+        return true;
+    } catch (error) {
+        console.error('Erreur de sauvegarde IndexedDB:', error);
+        return false;
+    }
+}
+
+async function restoreFromIndexedDB() {
+    if (!db) {
+        await openDatabase();
+    }
+    
+    try {
+        const transaction = db.transaction(['arrets', 'absences', 'settings'], 'readonly');
+        
+        const arretsStore = transaction.objectStore('arrets');
+        const absencesStore = transaction.objectStore('absences');
+        const settingsStore = transaction.objectStore('settings');
+        
+        const [arrets, absences, pausesSetting, equipeSetting, shiftSetting, shiftConfigsSetting, objectifsSetting, teamLeaderSetting] = await Promise.all([
+            new Promise(resolve => {
+                const request = arretsStore.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve([]);
+            }),
+            new Promise(resolve => {
+                const request = absencesStore.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve([]);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('pauses');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('equipe');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('selectedShift');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('shiftConfigs');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('objectifs');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            }),
+            new Promise(resolve => {
+                const request = settingsStore.get('teamLeader');
+                request.onsuccess = () => resolve(request.result?.value);
+                request.onerror = () => resolve(null);
+            })
+        ]);
+        
+        if (arrets && arrets.length > 0) {
+            history = arrets.map(item => {
+                const { id, synced, ...rest } = item;
+                return rest;
+            });
+            localStorage.setItem("HISTO", JSON.stringify(history));
+        }
+        
+        if (absences && absences.length > 0) {
+            absenceHistory = absences.map(item => {
+                const { id, synced, ...rest } = item;
+                return rest;
+            });
+            localStorage.setItem("ABSENCES", JSON.stringify(absenceHistory));
+        }
+        
+        if (pausesSetting) {
+            document.getElementById("p1Start").value = pausesSetting.p1Start;
+            document.getElementById("p1End").value = pausesSetting.p1End;
+            document.getElementById("p2Start").value = pausesSetting.p2Start;
+            document.getElementById("p2End").value = pausesSetting.p2End;
+            document.getElementById("p3Start").value = pausesSetting.p3Start;
+            document.getElementById("p3End").value = pausesSetting.p3End;
+            updatePauseTimes();
+        }
+        
+        if (equipeSetting) {
+            equipe = equipeSetting;
+            document.getElementById("equipe").value = equipe;
+        }
+        
+        if (shiftSetting) {
+            currentShiftType = shiftSetting;
+        }
+        
+        if (shiftConfigsSetting) {
+            shiftConfigs = shiftConfigsSetting;
+        }
+        
+        if (objectifsSetting) {
+            objectifs = objectifsSetting;
+            updateObjectifsDisplay();
+        }
+        
+        if (teamLeaderSetting) {
+            teamLeader = teamLeaderSetting;
+            document.getElementById("teamLeader").value = teamLeader;
+            document.getElementById("teamLeader").style.color = "#FFD700";
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Erreur de restauration IndexedDB:', error);
+        return false;
+    }
+}
+
+function startAutoSave() {
+    saveInterval = setInterval(() => {
+        if (Date.now() - lastSaveTime > 30000) {
+            if (db) saveToIndexedDB();
+            lastSaveTime = Date.now();
+        }
+    }, 10000);
+}
+
+// =============================================
+// NETTOYAGE DES ANCIENNES DONNÉES
+// =============================================
+
+function cleanupOldData() {
+    const now = new Date();
+    const cutoffDate = new Date(now);
+    cutoffDate.setDate(cutoffDate.getDate() - 30);
+    
+    const cutoffShiftDateStr = getShiftDate(cutoffDate);
+    const cutoffShiftDate = shiftDateToDate(cutoffShiftDateStr);
+    
+    history = history.filter(h => {
+        const stopDate = shiftDateToDate(h.date);
+        return stopDate >= cutoffShiftDate;
+    });
+    
+    absenceHistory = absenceHistory.filter(a => {
+        const absenceDate = shiftDateToDate(a.date);
+        return absenceDate >= cutoffShiftDate;
+    });
+    
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    localStorage.setItem("ABSENCES", JSON.stringify(absenceHistory));
+    if (db) saveToIndexedDB();
+    
+    console.log(`Nettoyage effectué. Gardé ${history.length} arrêts et ${absenceHistory.length} absences.`);
+}
+
+// =============================================
+// WHATSAPP ET EXPORTS - MODIFIÉ POUR "TEAM LEADER:"
+// =============================================
+
+function sendWhatsAppResume(cause, duration, startTime, endTime, teamLeader) {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    let msg = `*✅ REPRISE CHAÎNE - Équipe ${equipe}*\n`;
+    msg += `*Shift:* ${shiftDate} (${config.name})\n`;
+    msg += `*Heure de reprise:* ${new Date().toLocaleTimeString()}\n`;
+    msg += `*Arrêt:* ${startTime} - ${endTime}\n`;
+    msg += `*Durée:* ${formatDuration(duration)}\n`;
+    msg += `*Cause:* ${cause}\n`;
+    // CHANGÉ: "Team Leader:" au lieu de "Superviseur:"
+    if (teamLeader) msg += `*Team Leader:* ${teamLeader}\n`;
+    msg += `*Équipe:* ${equipe}\n`;
+    msg += `\n_Chaîne de production en cours..._`;
+    sendWhatsApp(msg);
+}
+
+function sendWhatsAppCurrent() {
+    const now = new Date();
+    const shiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    const filteredStops = history.filter(h => h.date === shiftDate && h.equipe === equipe);
+    const filteredAbsences = absenceHistory.filter(a => a.date === shiftDate && a.equipe === equipe);
+
+    if (filteredStops.length === 0 && filteredAbsences.length === 0) {
+        alert(`Aucun arrêt ni absence enregistré pour le shift ${config.name} du ${shiftDate} pour cette équipe.`);
+        return;
+    }
+    
+    const totalDurationGross = filteredStops.reduce((a, b) => a + b.duration, 0);
+    const pauseData = calculateTotalPauseMinutes();
+    const totalPauseMinutes = pauseData.total;
+    const pauseSeconds = totalPauseMinutes * 60;
+    const totalDurationNet = Math.max(0, totalDurationGross - pauseSeconds);
+    
+    const totalAbsenceDays = filteredAbsences.reduce((a, b) => a + b.durationDays, 0);
+    const totalAbsenceHours = filteredAbsences.reduce((a, b) => a + b.durationHours, 0);
+    const uniquePosts = new Set(filteredAbsences.map(a => a.poste)).size;
+
+    let msg = `*📊 RAPPORT ACTUEL - Équipe ${equipe}*\n`;
+    msg += `*Shift:* ${shiftDate} (${config.name})\n`;
+    msg += `*Heure:* ${new Date().toLocaleTimeString()}\n`;
+    msg += `\n*--- ARRÊTS CHAÎNE ---\n`;
+    msg += `*Total arrêts:* ${filteredStops.length}\n`;
+    msg += `*Temps total (Net):* ${formatDuration(totalDurationNet)}\n`;
+    msg += `*Temps total (Brut):* ${formatDuration(totalDurationGross)}\n`;
+    
+    // CHANGÉ: Ajout du Team Leader au rapport actuel
+    const latestStop = filteredStops[filteredStops.length - 1];
+    if (latestStop && latestStop.teamLeader) {
+        msg += `*Team Leader:* ${latestStop.teamLeader}\n`;
+    }
+    
+    // Ajout des indicateurs EPO auto-calculés
+    const rendement = calculerRendementAuto();
+    msg += `\n*--- INDICATEURS EPO (AUTO) ---\n`;
+    msg += `*Disponibilité:* ${rendement.disponibilite}%\n`;
+    msg += `*Performance:* ${rendement.performance}%\n`;
+    msg += `*Qualité:* ${rendement.qualite}%\n`;
+    msg += `*Rendement Global:* ${rendement.rendementGlobal}%\n`;
+    
+    msg += `\n*--- ABSENCES DU SHIFT ---\n`;
+    msg += `*Nb Absences (Événements):* ${filteredAbsences.length}\n`;
+    msg += `*Nb Postes concernés:* ${uniquePosts}\n`;
+    msg += `*Total Jours Absences:* ${totalAbsenceDays}j\n`;
+    msg += `*Total Heures Absences:* ${totalAbsenceHours}h\n`;
+    
+    if (filteredAbsences.length > 0) {
+        msg += `*Détail des absences :*\n`;
+        filteredAbsences.forEach(a => {
+            msg += ` • ${a.poste} - ${a.type} (${a.durationDays}j / ${a.durationHours}h)\n`;
+        });
+    }
+
+    sendWhatsApp(msg);
+}
+
+function sendWhatsAppStartShift() {
+    const now = new Date();
+    const currentShiftDate = getShiftDate(now);
+    const config = shiftConfigs[currentShiftType];
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayShiftDate = getShiftDate(yesterday);
+    
+    const yesterdayStops = history.filter(h => h.equipe === equipe && h.date === yesterdayShiftDate);
+    const todayAbsences = absenceHistory.filter(a => a.equipe === equipe && a.date === currentShiftDate);
+    
+    const yesterdayDuration = yesterdayStops.reduce((a, b) => a + b.duration, 0);
+    const pauseData = calculateTotalPauseMinutes();
+    const pauseSeconds = pauseData.total * 60;
+    const yesterdayNetDuration = Math.max(0, yesterdayDuration - pauseSeconds);
+    
+    const plannedAbsences = todayAbsences.filter(a => 
+        a.type === "CA" || a.type === "CM" || a.type === "CR"
+    );
+    
+    let msg = `*🌅 RAPPORT DÉBUT DE SHIFT - Équipe ${equipe}*\n`;
+    msg += `*Shift:* ${currentShiftDate} (${config.name})\n`;
+    msg += `*Heure:* ${new Date().toLocaleTimeString()}\n`;
+    
+    // CHANGÉ: Ajout du Team Leader actuel au rapport début de shift
+    const currentTeamLeader = document.getElementById("teamLeader").value || teamLeader;
+    if (currentTeamLeader) {
+        msg += `*Team Leader:* ${currentTeamLeader}\n`;
+    }
+    
+    msg += `\n*--- PERFORMANCE SHIFT PRÉCÉDENT ---\n`;
+    msg += `*Date du shift:* ${yesterdayShiftDate}\n`;
+    msg += `*Arrêts:* ${yesterdayStops.length}\n`;
+    msg += `*Temps d'arrêt net:* ${formatDuration(yesterdayNetDuration)}\n`;
+    if (yesterdayStops.length > 0) {
+        const avgDuration = Math.round(yesterdayNetDuration / yesterdayStops.length);
+        msg += `*Durée moyenne par arrêt:* ${formatDuration(avgDuration)}\n`;
+        const causes = {};
+        yesterdayStops.forEach(h => {
+            causes[h.cause] = (causes[h.cause] || 0) + h.duration;
+        });
+        const topCause = Object.entries(causes).sort(([,a], [,b]) => b - a)[0];
+        if (topCause) {
+            msg += `*Cause principale:* ${topCause[0]} (${formatDuration(topCause[1])})\n`;
+        }
+    } else {
+        msg += `*Aucun arrêt enregistré hier*\n`;
+    }
+    
+    msg += `\n*--- PLANIFICATION DU SHIFT ---\n`;
+    msg += `*Absences prévues:* ${plannedAbsences.length}\n`;
+    if (plannedAbsences.length > 0) {
+        msg += `*Détail des absences :*\n`;
+        plannedAbsences.forEach(a => {
+            msg += ` • ${a.poste} - ${a.type} (${a.durationDays}j)\n`;
+        });
+        const totalAbsenceDays = plannedAbsences.reduce((a, b) => a + b.durationDays, 0);
+        msg += `*Total jours d'absence:* ${totalAbsenceDays}j\n`;
+    } else {
+        msg += `*Aucune absence prévue aujourd'hui*\n`;
+    }
+    
+    msg += `\n*--- OBJECTIFS DU SHIFT ---\n`;
+    if (objectifs.date === currentShiftDate && objectifs.equipe === equipe) {
+        if (objectifs.production) msg += `• Production: ${objectifs.production} unités\n`;
+        if (objectifs.trs) msg += `• TRS: ${objectifs.trs}%\n`;
+        if (objectifs.qualite) msg += `• Qualité: ${objectifs.qualite}%\n`;
+        if (objectifs.arrets) msg += `• Arrêts max: ${objectifs.arrets}\n`;
+    } else {
+        msg += `• Aucun objectif spécifique défini\n`;
+    }
+    
+    msg += `\n_📈 Bon shift à toute l'équipe !_`;
+    sendWhatsApp(msg);
+}
+
+document.getElementById("whStartBtn").onclick = sendWhatsAppStartShift;
+
+function sendWhatsApp(message) {
+    const encodedMsg = encodeURIComponent(message);
+    window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
+}
+
+document.getElementById("csvBtn").onclick = () => {
+    const filtered = history.filter(h => h.equipe === equipe);
+    let csv = "Date,Cause,Début,Fin,Durée(s),Équipe,Team Leader,Type,Shift\n";
+    filtered.forEach(h => {
+        const type = h.type === "raté" ? "Arrêt raté" : "Arrêt normal";
+        const config = shiftConfigs[currentShiftType];
+        const shiftInfo = `Shift ${h.date} (${config.name})`;
+        // CHANGÉ: Colonne "Team Leader" au lieu de "Superviseur"
+        csv += `${h.date},"${h.cause.replace(/"/g, '""')}",${h.start},${h.end},${h.duration},${h.equipe},"${h.teamLeader || ''}",${type},"${shiftInfo}"\n`;
+    });
+    let blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Arrets_Stellantis_Equipe${equipe}_Shift${currentShiftType}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
+
+document.getElementById("csvAbsencesBtn").onclick = () => {
+    const filtered = absenceHistory.filter(a => a.equipe === equipe);
+    let csv = "Date,Type_Absence,Poste_Opérateur,Durée(Jours),Durée(Heures),Équipe,Timestamp,Shift\n";
+    filtered.forEach(a => {
+        const config = shiftConfigs[currentShiftType];
+        const shiftInfo = `Shift ${a.date} (${config.name})`;
+        csv += `${a.date},${a.type},"${a.poste.replace(/"/g, '""')}",${a.durationDays},${a.durationHours},${a.equipe},${new Date(a.timestamp).toLocaleString()},"${shiftInfo}"\n`;
+    });
+    let blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Absences_Stellantis_Equipe${equipe}_Shift${currentShiftType}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
+
+document.getElementById("whBtn").onclick = sendWhatsAppCurrent;
+
+document.getElementById("whShiftBtn").onclick = () => {
+    document.getElementById('shiftModal').style.display = 'flex';
+};
+
+function selectReportTeam(team) {
+    const clickedBtn = document.querySelector(`[onclick*="selectReportTeam('${team}')"]`);
+    if (clickedBtn) {
+        const buttons = document.querySelectorAll('#shiftModal .filter-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        clickedBtn.classList.add('active');
+    }
+    currentReportTeam = team;
+}
+
+function closeShiftModal() {
+    document.getElementById('shiftModal').style.display = 'none';
+}
+
+function sendShiftReport() {
+    const period = document.getElementById('periodSelect').value;
+    const team = currentReportTeam;
+    
+    let filteredStops = history.filter(h => h.equipe === team);
+    let filteredAbsences = absenceHistory.filter(a => a.equipe === team);
+
+    // Filtrer par période SHIFT
+    filteredStops = filterByShiftPeriod(filteredStops, period);
+    filteredAbsences = filterByShiftPeriod(filteredAbsences, period);
+    
+    if (filteredStops.length === 0 && filteredAbsences.length === 0) {
+        alert("Aucun arrêt ni absence enregistré pour cette période pour l'équipe " + team + ".");
+        return;
+    }
+    
+    const totalDurationGross = filteredStops.reduce((a, b) => a + b.duration, 0);
+    const pauseData = calculateTotalPauseMinutes();
+    const pauseSeconds = pauseData.total * 60;
+    const totalDurationNet = Math.max(0, totalDurationGross - pauseSeconds);
+    
+    const totalAbsenceDays = filteredAbsences.reduce((a, b) => a + b.durationDays, 0);
+    const totalAbsenceHours = filteredAbsences.reduce((a, b) => a + b.durationHours, 0);
+    const uniquePosts = new Set(filteredAbsences.map(a => a.poste)).size;
+    
+    let periodText = {
+        'today': 'Shift actuel',
+        'week': '7 derniers shifts',
+        'month': '30 derniers shifts',
+        'all': 'Tous shifts'
+    }[period];
+    
+    let msg = `*📋 RAPPORT FIN DE SHIFT - Équipe ${team}*\n`;
+    msg += `*Période:* ${periodText}\n`;
+    msg += `*Date:* ${new Date().toLocaleDateString()}\n`;
+    msg += `*Heure:* ${new Date().toLocaleTimeString()}\n`;
+    
+    // CHANGÉ: Ajout du Team Leader au rapport fin de shift
+    const latestTeamLeader = filteredStops.length > 0 ? filteredStops[filteredStops.length - 1].teamLeader : '';
+    if (latestTeamLeader) {
+        msg += `*Team Leader:* ${latestTeamLeader}\n`;
+    }
+    
+    msg += `\n*--- ARRÊTS CHAÎNE ---\n`;
+    msg += `*Total arrêts:* ${filteredStops.length}\n`;
+    msg += `*Temps total (Net):* ${formatDuration(totalDurationNet)}\n`;
+    msg += `*Temps total (Brut):* ${formatDuration(totalDurationGross)}\n`;
+    
+    msg += `\n*--- ABSENCES ---\n`;
+    msg += `*Nb Absences (Événements):* ${filteredAbsences.length}\n`;
+    msg += `*Nb Postes concernés:* ${uniquePosts}\n`;
+    msg += `*Total Jours Absences:* ${totalAbsenceDays}j\n`;
+    msg += `*Total Heures Absences:* ${totalAbsenceHours}h\n`;
+    
+    if (filteredAbsences.length > 0) {
+        msg += `*Répartition par Type :*\n`;
+        const byType = {};
+        filteredAbsences.forEach(a => {
+            byType[a.type] = (byType[a.type] || {days: 0, count: 0});
+            byType[a.type].days += a.durationDays;
+            byType[a.type].count++;
+        });
+        
+        Object.entries(byType).forEach(([type, data]) => {
+            msg += ` • ${type}: ${data.count}x - ${data.days}j\n`;
+        });
+    }
+
+    sendWhatsApp(msg);
+    closeShiftModal();
+}
+
+// =============================================
+// SAUVEGARDE MANUELLE
+// =============================================
+
+document.getElementById("manualSaveBtn").onclick = async () => {
+    const saveBtn = document.getElementById("manualSaveBtn");
+    const originalText = saveBtn.innerHTML;
+    
+    saveBtn.innerHTML = '💾 Sauvegarde en cours...';
+    saveBtn.disabled = true;
+    
+    try {
+        await saveToIndexedDB();
+        document.getElementById("autoSaveSound").play().catch(() => {});
+        
+        const indicator = document.createElement('div');
+        indicator.className = 'save-indicator visible';
+        indicator.textContent = '✅ Données sauvegardées';
+        document.body.appendChild(indicator);
+        
+        setTimeout(() => {
+            indicator.remove();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Erreur de sauvegarde:', error);
+        alert('Erreur lors de la sauvegarde: ' + error.message);
+    } finally {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+};
+
+// =============================================
+// GESTION DE LA VISIBILITÉ
+// =============================================
+
+document.addEventListener('visibilitychange', async () => {
+    if (document.hidden) {
+        console.log('Page cachée - Sauvegarde urgente');
+        if (db) await saveToIndexedDB();
+        cancelPauseAlarms();
+        
+        if (start) {
+            console.log('Arrêt en cours - mise en pause virtuelle');
+        }
+        
+    } else {
+        console.log('Page visible - Restauration');
+        if (db) await restoreFromIndexedDB();
+        refreshTable();
+        refreshAbsenceStats();
+        updateAllCharts();
+        schedulePauseAlarms();
+        
+        if (start) {
+            const now = new Date();
+            const diff = Math.floor((now - start) / 1000);
+            if (diff > 300) {
+                if (confirm("Un arrêt était en cours pendant votre absence. Voulez-vous le terminer maintenant?")) {
+                    document.getElementById("goBtn").click();
+                }
+            }
+        }
+    }
+});
+
+// =============================================
+// GRAPHIQUES PARETO
+// =============================================
+
+function getTabText(tabName) {
+    const map = {
+        'paretoHours': '🕒 Tendance Temporelle',
+        'paretoCauses': '📊 Pareto 80/20 Causes',
+        'paretoStops': '📈 Pareto Nombre Arrêts',
+        'paretoAbsences': '👥 Pareto Absences',
+        'teamPerformance': '⭐ Performance Équipes'
+    };
+    return map[tabName] || '';
+}
+
+function showTab(tabName) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.chart-container').forEach(container => container.classList.remove('active'));
+    
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        if (tab.textContent.includes(getTabText(tabName))) {
+            tab.classList.add('active');
+        }
+    });
+    
+    const container = document.getElementById(`${tabName}ChartContainer`);
+    if (container) {
+        container.classList.add('active');
+    }
+    
+    switch(tabName) {
+        case 'paretoHours':
+            updateParetoHoursChart();
+            break;
+        case 'paretoCauses':
+            updateParetoCausesChart();
+            break;
+        case 'paretoStops':
+            updateParetoStopsChart();
+            break;
+        case 'teamPerformance':
+            updateTeamPerformanceChart();
+            break;
+        case 'paretoAbsences':
+            updateParetoAbsencesChart();
+            break;
+    }
+}
+
+function updateAllCharts() {
+    const activeContainer = document.querySelector('.chart-container.active');
+    if (!activeContainer) return;
+    
+    const containerId = activeContainer.id;
+    if (containerId.includes('Hours')) updateParetoHoursChart();
+    else if (containerId.includes('Causes')) updateParetoCausesChart();
+    else if (containerId.includes('Stops')) updateParetoStopsChart();
+    else if (containerId.includes('Performance')) updateTeamPerformanceChart();
+    else if (containerId.includes('Absences')) updateParetoAbsencesChart();
+}
+
+// FILTRES
+function filterHours(team) {
+    document.querySelectorAll('#paretoHoursChartContainer .filter-group:first-child .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterHours('${team}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.hours = team;
+    updateParetoHoursChart();
+}
+
+function filterCauses(team) {
+    document.querySelectorAll('#paretoCausesChartContainer .filter-group:first-child .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterCauses('${team}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.causes = team;
+    updateParetoCausesChart();
+}
+
+function filterStops(team) {
+    document.querySelectorAll('#paretoStopsChartContainer .filter-group:first-child .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterStops('${team}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.stops = team;
+    updateParetoStopsChart();
+}
+
+function filterAbsences(team) {
+    document.querySelectorAll('#paretoAbsencesChartContainer .filter-group:first-child .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterAbsences('${team}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.absences = team;
+    updateParetoAbsencesChart();
+}
+
+function setChartPeriod(period) {
+    const activeContainer = document.querySelector('.chart-container.active');
+    const periodButtons = activeContainer.querySelectorAll('.filter-group:nth-child(2) .filter-btn');
+    periodButtons.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = event.target;
+    clickedBtn.classList.add('active');
+    
+    currentFilter.period = period;
+    
+    updateAllCharts();
+}
+
+function filterPerformance(period) {
+    document.querySelectorAll('#teamPerformanceChartContainer .filter-group:first-child .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterPerformance('${period}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.performance = period;
+    updateTeamPerformanceChart();
+}
+
+function filterMetric(metric) {
+    document.querySelectorAll('#teamPerformanceChartContainer .filter-group:nth-child(2) .filter-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = document.querySelector(`[onclick*="filterMetric('${metric}')"]`);
+    if (clickedBtn) clickedBtn.classList.add('active');
+    currentFilter.metric = metric;
+    updateTeamPerformanceChart();
+}
+
+// NOUVEAU DESIGN PARETO CAUSES - BARRES ET 80/20% CLAIRS
+function updateParetoCausesChart() {
+    let filtered = history;
+    if (currentFilter.causes !== 'all') {
+        filtered = history.filter(h => h.equipe === currentFilter.causes);
+    }
+    
+    // Filtrer par période shift
+    if (currentFilter.period && currentFilter.period !== 'all') {
+        filtered = filterByShiftPeriod(filtered, currentFilter.period);
+    }
+    
+    let causesData = {};
+    filtered.forEach(h => {
+        const cause = h.cause || 'Non spécifié';
+        causesData[cause] = (causesData[cause] || 0) + h.duration;
+    });
+    
+    let sortedCauses = Object.entries(causesData)
+        .sort(([,a], [,b]) => b - a);
+    
+    const topCauses = sortedCauses.slice(0, 8); // Limité à 8 causes pour plus de clarté
+    
+    const totalDuration = topCauses.reduce((sum, [, duration]) => sum + duration, 0);
+    let cumulativeDuration = 0;
+    let cumulativePercentage = [];
+    
+    const barData = topCauses.map(([, duration]) => duration);
+    topCauses.forEach(([, duration]) => {
+        cumulativeDuration += duration;
+        cumulativePercentage.push((cumulativeDuration / totalDuration) * 100);
+    });
+    
+    let labels = topCauses.map(([cause]) => cause.length > 20 ? cause.substring(0, 20) + '...' : cause);
+    
+    const ctx = document.getElementById('paretoCausesChart').getContext('2d');
+    
+    if (charts.paretoCauses) charts.paretoCauses.destroy();
+    
+    // Nouveau design avec barres colorées et 80/20 très visible
+    const barColors = [
+        'rgba(42, 157, 143, 0.9)',   // Vert
+        'rgba(26, 125, 255, 0.9)',   // Bleu
+        'rgba(255, 159, 28, 0.9)',   // Orange
+        'rgba(216, 4, 41, 0.9)',     // Rouge
+        'rgba(148, 0, 211, 0.9)',    // Violet
+        'rgba(50, 205, 50, 0.9)',    // Vert clair
+        'rgba(30, 144, 255, 0.9)',   // Bleu clair
+        'rgba(255, 69, 0, 0.9)'      // Rouge-orange
+    ];
+    
+    charts.paretoCauses = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Durée Totale (secondes)',
+                    data: barData,
+                    backgroundColor: barColors,
+                    borderColor: barColors.map(color => color.replace('0.9', '1')),
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(13, 27, 42, 0.95)',
+                    titleColor: '#2a9d8f',
+                    bodyColor: '#e0e1dd',
+                    borderColor: '#2a9d8f',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const percentage = (value / totalDuration * 100).toFixed(1);
+                            return [`Durée: ${formatDuration(value)}`, `Part: ${percentage}%`];
+                        },
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            if (index < cumulativePercentage.length) {
+                                return `Cumul: ${cumulativePercentage[index].toFixed(1)}%`;
+                            }
+                            return '';
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line80: {
+                            type: 'line',
+                            yMin: 80,
+                            yMax: 80,
+                            borderColor: 'rgba(217, 4, 41, 0.9)',
+                            borderWidth: 3,
+                            borderDash: [10, 5],
+                            label: {
+                                enabled: true,
+                                content: '80% - Règle Pareto',
+                                position: 'end',
+                                backgroundColor: 'rgba(217, 4, 41, 0.9)',
+                                color: '#fff',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Durée totale (secondes)',
+                        color: '#2a9d8f',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: { 
+                        color: 'rgba(255,255,255,0.1)',
+                        drawBorder: false
+                    },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    min: 0,
+                    max: 100,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '% Cumulé (80/20)',
+                        color: '#ff9f1c',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: { drawOnChartArea: false },
+                    ticks: { 
+                        color: '#ff9f1c',
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            if (value === 80) return '80% Pareto';
+                            return value + "%";
+                        }
+                    }
+                },
+                x: {
+                    grid: { 
+                        color: 'rgba(255,255,255,0.1)',
+                        drawBorder: false
+                    },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+    
+    // Ajouter manuellement les pourcentages cumulés
+    setTimeout(() => {
+        const chartInstance = charts.paretoCauses;
+        const meta = chartInstance.getDatasetMeta(0);
+        
+        // Dessiner les pourcentages cumulés au-dessus des barres
+        chartInstance.ctx.save();
+        chartInstance.ctx.font = 'bold 11px Arial';
+        chartInstance.ctx.fillStyle = '#ff9f1c';
+        chartInstance.ctx.textAlign = 'center';
+        
+        meta.data.forEach((bar, index) => {
+            if (index < cumulativePercentage.length) {
+                const percentage = cumulativePercentage[index];
+                const x = bar.x;
+                const y = bar.y - 10;
+                
+                // Changer la couleur si on dépasse 80%
+                if (percentage >= 80) {
+                    chartInstance.ctx.fillStyle = '#d90429';
+                } else {
+                    chartInstance.ctx.fillStyle = '#ff9f1c';
+                }
+                
+                chartInstance.ctx.fillText(`${percentage.toFixed(1)}%`, x, y);
+            }
+        });
+        
+        chartInstance.ctx.restore();
+    }, 500);
+}
+
+// NOUVEAU DESIGN PARETO ABSENCES - BARRES ET 80/20% CLAIRS
+function updateParetoAbsencesChart() {
+    let filtered = absenceHistory;
+    if (currentFilter.absences !== 'all') {
+        filtered = absenceHistory.filter(a => a.equipe === currentFilter.absences);
+    }
+    
+    // Filtrer par période shift
+    if (currentFilter.period && currentFilter.period !== 'all') {
+        filtered = filterByShiftPeriod(filtered, currentFilter.period, 'date');
+    }
+
+    let absencesData = {};
+    filtered.forEach(a => {
+        absencesData[a.type] = (absencesData[a.type] || 0);
+        absencesData[a.type] += a.durationDays;
+    });
+    
+    let sortedAbsences = Object.entries(absencesData)
+        .sort(([,a], [,b]) => b - a);
+    
+    const topAbsences = sortedAbsences.slice(0, 8); // Limité à 8 types pour plus de clarté
+    
+    const totalDays = topAbsences.reduce((sum, [, days]) => sum + days, 0);
+    let cumulativeDays = 0;
+    let cumulativePercentage = [];
+    
+    const barData = topAbsences.map(([, days]) => days);
+    topAbsences.forEach(([, days]) => {
+        cumulativeDays += days;
+        cumulativePercentage.push((cumulativeDays / totalDays) * 100);
+    });
+    
+    let labels = topAbsences.map(([type]) => {
+        // Raccourcir les libellés longs
+        const shortTypes = {
+            'AA': 'Absence Autorisée',
+            'AI': 'Absence Irrégulière',
+            'CM': 'Congés Médical',
+            'CR': 'Congés Récupération',
+            'CA': 'Congés Annuels',
+            'SU': 'Suspendu'
+        };
+        return shortTypes[type] || (type.length > 15 ? type.substring(0, 15) + '...' : type);
+    });
+    
+    const ctx = document.getElementById('paretoAbsencesChart').getContext('2d');
+    
+    if (charts.paretoAbsences) charts.paretoAbsences.destroy();
+    
+    // Nouveau design avec barres colorées
+    const barColors = [
+        'rgba(14, 165, 233, 0.9)',   // Bleu info
+        'rgba(26, 125, 255, 0.9)',   // Bleu primaire
+        'rgba(42, 157, 143, 0.9)',   // Vert
+        'rgba(255, 159, 28, 0.9)',   // Orange
+        'rgba(148, 0, 211, 0.9)',    // Violet
+        'rgba(50, 205, 50, 0.9)',    // Vert clair
+        'rgba(30, 144, 255, 0.9)',   // Bleu clair
+        'rgba(255, 69, 0, 0.9)'      // Rouge-orange
+    ];
+    
+    charts.paretoAbsences = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Jours d\'Absence',
+                    data: barData,
+                    backgroundColor: barColors,
+                    borderColor: barColors.map(color => color.replace('0.9', '1')),
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(13, 27, 42, 0.95)',
+                    titleColor: '#0ea5e9',
+                    bodyColor: '#e0e1dd',
+                    borderColor: '#0ea5e9',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const percentage = (value / totalDays * 100).toFixed(1);
+                            return [`Jours: ${value.toFixed(1)}`, `Part: ${percentage}%`];
+                        },
+                        afterLabel: function(context) {
+                            const index = context.dataIndex;
+                            if (index < cumulativePercentage.length) {
+                                return `Cumul: ${cumulativePercentage[index].toFixed(1)}%`;
+                            }
+                            return '';
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        line80: {
+                            type: 'line',
+                            yMin: 80,
+                            yMax: 80,
+                            borderColor: 'rgba(217, 4, 41, 0.9)',
+                            borderWidth: 3,
+                            borderDash: [10, 5],
+                            label: {
+                                enabled: true,
+                                content: '80% - Règle Pareto',
+                                position: 'end',
+                                backgroundColor: 'rgba(217, 4, 41, 0.9)',
+                                color: '#fff',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Jours d\'absence',
+                        color: '#0ea5e9',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: { 
+                        color: 'rgba(255,255,255,0.1)',
+                        drawBorder: false
+                    },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    min: 0,
+                    max: 100,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '% Cumulé (80/20)',
+                        color: '#ff9f1c',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: { drawOnChartArea: false },
+                    ticks: { 
+                        color: '#ff9f1c',
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            if (value === 80) return '80% Pareto';
+                            return value + "%";
+                        }
+                    }
+                },
+                x: {
+                    grid: { 
+                        color: 'rgba(255,255,255,0.1)',
+                        drawBorder: false
+                    },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+    
+    // Ajouter manuellement les pourcentages cumulés
+    setTimeout(() => {
+        const chartInstance = charts.paretoAbsences;
+        const meta = chartInstance.getDatasetMeta(0);
+        
+        // Dessiner les pourcentages cumulés au-dessus des barres
+        chartInstance.ctx.save();
+        chartInstance.ctx.font = 'bold 11px Arial';
+        chartInstance.ctx.textAlign = 'center';
+        
+        meta.data.forEach((bar, index) => {
+            if (index < cumulativePercentage.length) {
+                const percentage = cumulativePercentage[index];
+                const x = bar.x;
+                const y = bar.y - 10;
+                
+                // Changer la couleur si on dépasse 80%
+                if (percentage >= 80) {
+                    chartInstance.ctx.fillStyle = '#d90429';
+                } else {
+                    chartInstance.ctx.fillStyle = '#ff9f1c';
+                }
+                
+                chartInstance.ctx.fillText(`${percentage.toFixed(1)}%`, x, y);
+            }
+        });
+        
+        chartInstance.ctx.restore();
+    }, 500);
+}
+
+// Les autres fonctions de graphiques restent inchangées
+function updateParetoHoursChart() {
+    let filtered = history;
+    if (currentFilter.hours !== 'all') {
+        filtered = history.filter(h => h.equipe === currentFilter.hours);
+    }
+    
+    // Filtrer par période shift
+    if (currentFilter.period && currentFilter.period !== 'all') {
+        filtered = filterByShiftPeriod(filtered, currentFilter.period);
+    }
+    
+    let hoursData = {};
+    for (let i = 0; i < 24; i++) {
+        hoursData[i] = 0;
+    }
+    
+    filtered.forEach(h => {
+        try {
+            const hour = parseInt(h.start.split(':')[0]);
+            if (!isNaN(hour) && hour >= 0 && hour < 24) {
+                hoursData[hour] = (hoursData[hour] || 0) + h.duration;
+            }
+        } catch (e) {
+            console.log('Erreur parsing heure:', h.start);
+        }
+    });
+    
+    let hoursArray = Object.entries(hoursData)
+        .map(([hour, duration]) => ({hour: parseInt(hour), duration}))
+        .sort((a, b) => b.duration - a.duration);
+    
+    const topHours = hoursArray.slice(0, 10);
+    
+    let labels = topHours.map(item => `${item.hour}h`);
+    let data = topHours.map(item => item.duration);
+    
+    const ctx = document.getElementById('paretoHoursChart').getContext('2d');
+    
+    if (charts.paretoHours) charts.paretoHours.destroy();
+    
+    charts.paretoHours = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Durée des arrêts (s)',
+                data: data,
+                backgroundColor: 'rgba(255, 159, 28, 0.85)', 
+                borderColor: 'rgba(255, 159, 28, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#e0e1dd' }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Durée: ${formatDuration(context.parsed.y)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Durée totale des arrêts (secondes)',
+                        color: '#e0e1dd'
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#e0e1dd' }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Heure de la journée',
+                        color: '#e0e1dd'
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#e0e1dd' }
+                }
+            }
+        }
+    });
+}
+
+function updateParetoStopsChart() {
+    let filtered = history;
+    if (currentFilter.stops !== 'all') {
+        filtered = history.filter(h => h.equipe === currentFilter.stops);
+    }
+    
+    // Filtrer par période shift
+    if (currentFilter.period && currentFilter.period !== 'all') {
+        filtered = filterByShiftPeriod(filtered, currentFilter.period);
+    }
+    
+    let causesData = {};
+    filtered.forEach(h => {
+        const cause = h.cause || 'Non spécifié';
+        causesData[cause] = (causesData[cause] || 0) + 1;
+    });
+    
+    let sortedCauses = Object.entries(causesData)
+        .sort(([,a], [,b]) => b - a);
+    
+    const topCauses = sortedCauses.slice(0, 10);
+    
+    const totalStops = topCauses.reduce((sum, [, count]) => sum + count, 0);
+    let cumulativeStops = 0;
+    let cumulativePercentage = [];
+    
+    const barData = topCauses.map(([, count]) => count);
+    topCauses.forEach(([, count]) => {
+        cumulativeStops += count;
+        cumulativePercentage.push((cumulativeStops / totalStops) * 100);
+    });
+    
+    let labels = topCauses.map(([cause]) => cause.length > 15 ? cause.substring(0, 15) + '...' : cause);
+    
+    const ctx = document.getElementById('paretoStopsChart').getContext('2d');
+    
+    if (charts.paretoStops) charts.paretoStops.destroy();
+    
+    charts.paretoStops = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Seuil 80% (Pareto)',
+                    data: labels.map(() => 80), 
+                    type: 'line',
+                    borderColor: 'rgba(217, 4, 41, 0.9)', 
+                    borderWidth: 3, 
+                    borderDash: [8, 4], 
+                    pointRadius: 0, 
+                    fill: false,
+                    yAxisID: 'y1',
+                    order: 1 
+                },
+                {
+                    label: 'Pourcentage Cumulé (%)',
+                    data: cumulativePercentage,
+                    type: 'line',
+                    borderColor: 'rgba(255, 159, 28, 1)', 
+                    backgroundColor: 'rgba(255, 159, 28, 0.2)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    order: 2, 
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Nombre d\'Arrêts',
+                    data: barData,
+                    backgroundColor: 'rgba(26, 125, 255, 0.85)', 
+                    borderColor: 'rgba(26, 125, 255, 1)',
+                    borderWidth: 1,
+                    order: 3, 
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#e0e1dd' }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (context.datasetIndex === 2) {
+                                return `Arrêts: ${context.parsed.y}`;
+                            } else if (context.datasetIndex === 1) {
+                                return `Cumul: ${context.parsed.y.toFixed(1)}%`;
+                            } else {
+                                return `Seuil 80%`;
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'arrêts',
+                        color: '#e0e1dd'
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        stepSize: 1
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    max: 100,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Pourcentage Cumulé (%)',
+                        color: '#ff9f1c'
+                    },
+                    grid: { drawOnChartArea: false }, 
+                    ticks: { 
+                        color: '#ff9f1c', 
+                        callback: function(value) { return value + "%"; } 
+                    }
+                },
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { 
+                        color: '#e0e1dd',
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateTeamPerformanceChart() {
+    const teams = ['A', 'B', 'C', 'D'];
+    let labels = teams.map(t => `Équipe ${t}`);
+    let data = [];
+    let colors = [];
+    let borderColors = [];
+    
+    const colorSchemes = {
+        duration: [
+            'rgba(26, 125, 255, 0.85)', 'rgba(42, 157, 143, 0.85)', 
+            'rgba(255, 159, 28, 0.85)', 'rgba(216, 4, 41, 0.85)'
+        ],
+        stops: [
+            'rgba(106, 90, 205, 0.85)', 'rgba(60, 179, 113, 0.85)', 
+            'rgba(238, 130, 238, 0.85)', 'rgba(255, 140, 0, 0.85)'
+        ],
+        efficiency: [
+            'rgba(50, 205, 50, 0.85)', 'rgba(30, 144, 255, 0.85)', 
+            'rgba(255, 69, 0, 0.85)', 'rgba(148, 0, 211, 0.85)'
+        ]
+    };
+    
+    const borderColorSchemes = {
+        duration: [
+            'rgba(26, 125, 255, 1)', 'rgba(42, 157, 143, 1)', 
+            'rgba(255, 159, 28, 1)', 'rgba(216, 4, 41, 1)'
+        ],
+        stops: [
+            'rgba(106, 90, 205, 1)', 'rgba(60, 179, 113, 1)', 
+            'rgba(238, 130, 238, 1)', 'rgba(255, 140, 0, 1)'
+        ],
+        efficiency: [
+            'rgba(50, 205, 50, 1)', 'rgba(30, 144, 255, 1)', 
+            'rgba(255, 69, 0, 1)', 'rgba(148, 0, 211, 1)'
+        ]
+    };
+    
+    teams.forEach((team, index) => {
+        let teamData = history.filter(h => h.equipe === team);
+        
+        // Filtrer par période shift
+        if (currentFilter.performance !== 'all') {
+            teamData = filterByShiftPeriod(teamData, currentFilter.performance);
+        }
+        
+        if (currentFilter.metric === 'duration') {
+            const totalDuration = teamData.reduce((a, b) => a + b.duration, 0);
+            data.push(totalDuration);
+            colors.push(colorSchemes.duration[index]);
+            borderColors.push(borderColorSchemes.duration[index]);
+        } else if (currentFilter.metric === 'stops') {
+            data.push(teamData.length);
+            colors.push(colorSchemes.stops[index]);
+            borderColors.push(borderColorSchemes.stops[index]);
+        } else if (currentFilter.metric === 'efficiency') {
+            if (teamData.length === 0) {
+                data.push(0);
+            } else {
+                const totalDuration = teamData.reduce((a, b) => a + b.duration, 0);
+                const avgDuration = totalDuration / teamData.length;
+                const efficiency = Math.max(0, 100 - (avgDuration / 60));
+                data.push(Math.round(efficiency * 10) / 10);
+            }
+            colors.push(colorSchemes.efficiency[index]);
+            borderColors.push(borderColorSchemes.efficiency[index]);
+        }
+    });
+    
+    const ctx = document.getElementById('teamPerformanceChart').getContext('2d');
+    
+    if (charts.teamPerformance) charts.teamPerformance.destroy();
+    
+    let title = {
+        'duration': 'Durée totale des arrêts (secondes)',
+        'stops': 'Nombre total d\'arrêts',
+        'efficiency': 'Score d\'efficacité (0-100)'
+    }[currentFilter.metric];
+    
+    let yAxisTitle = {
+        'duration': 'Secondes',
+        'stops': 'Nombre d\'arrêts',
+        'efficiency': 'Score'
+    }[currentFilter.metric];
+
+    charts.teamPerformance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: title,
+                data: data,
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: '#e0e1dd' }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (currentFilter.metric === 'duration') {
+                                return `Durée: ${formatDuration(context.parsed.y)}`;
+                            } else if (currentFilter.metric === 'stops') {
+                                return `Arrêts: ${context.parsed.y}`;
+                            } else if (currentFilter.metric === 'efficiency') {
+                                return `Score: ${context.parsed.y}`;
+                            }
+                            return context.dataset.label + ': ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: yAxisTitle,
+                        color: '#e0e1dd'
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#e0e1dd' }
+                },
+                x: {
+                    ticks: { color: '#e0e1dd' }
+                }
+            }
+        }
+    });
+}
+
+// =============================================
+// INITIALISATION FINALE
+// =============================================
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await openDatabase();
+        await restoreFromIndexedDB();
+    } catch (error) {
+        console.log('IndexedDB non supporté ou erreur:', error);
+    }
+    
+    // Initialiser les pauses
+    document.getElementById("p1Start").value = getPauseTime("PAUSE_1_START", defaultPauses.p1Start);
+    document.getElementById("p1End").value = getPauseTime("PAUSE_1_END", defaultPauses.p1End);
+    document.getElementById("p2Start").value = getPauseTime("PAUSE_2_START", defaultPauses.p2Start);
+    document.getElementById("p2End").value = getPauseTime("PAUSE_2_END", defaultPauses.p2End);
+    document.getElementById("p3Start").value = getPauseTime("PAUSE_3_START", defaultPauses.p3Start);
+    document.getElementById("p3End").value = getPauseTime("PAUSE_3_END", defaultPauses.p3End);
+    
+    // Initialiser le Team Leader
+    if (teamLeader) {
+        document.getElementById("teamLeader").value = teamLeader;
+        document.getElementById("teamLeader").style.color = "#FFD700";
+    }
+    
+    // Configurer les contrôles d'alarme
+    document.getElementById("testAlarmBtn").onclick = testAlarm;
+    document.getElementById("snoozeAlarmBtn").onclick = snoozeAlarm;
+    document.getElementById("stopAlarmBtn").onclick = () => {
+        if (activeAlarms.length > 0) {
+            stopAlarm(activeAlarms[0].id);
+        }
+    };
+    
+    // Configurer les objectifs
+    document.getElementById("saveObjectifsBtn").onclick = saveObjectifs;
+    
+    // Restaurer le shift sélectionné
+    const savedShift = localStorage.getItem('selectedShift');
+    if (savedShift && shiftConfigs[savedShift]) {
+        selectShift(savedShift);
+    } else {
+        // Déterminer automatiquement le shift actuel
+        const now = new Date();
+        getShiftDate(now); // Cela met à jour currentShiftType automatiquement
+        selectShift(currentShiftType);
+    }
+    
+    // Initialiser les stats d'absences
+    refreshAbsenceStats();
+    
+    // Nettoyer les anciennes données
+    cleanupOldData();
+    
+    // Planifier les alarmes de pause
+    schedulePauseAlarms();
+    setInterval(schedulePauseAlarms, 60000);
+    
+    // Vérifier le nettoyage toutes les heures
+    setInterval(cleanupOldData, 3600000);
+    
+    // Démarrer la sauvegarde automatique
+    startAutoSave();
+    
+    // Initialiser les objectifs et EPO
+    updateObjectifsDisplay();
+    mettreAJourRendementAuto();
+    
+    // Rafraîchir l'affichage
+    refreshTable();
+    
+    // Afficher le premier onglet
+    showTab('paretoHours');
+});
+
+// Synchronisation automatique
+setInterval(() => {
+    localStorage.setItem("HISTO", JSON.stringify(history));
+    localStorage.setItem("ABSENCES", JSON.stringify(absenceHistory));
+}, 30000);
+</script>
+</body>
+</html>
